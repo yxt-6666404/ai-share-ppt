@@ -649,9 +649,24 @@
   .slide.is-active .stagger-5{animation-delay:.5s}
   .slide.is-active .stagger-6{animation-delay:.6s}
 
+  /* ============ 精致滚动条 ============ */
+  .slide ::-webkit-scrollbar{width:4px;height:4px}
+  .slide ::-webkit-scrollbar-track{background:transparent}
+  .slide ::-webkit-scrollbar-thumb{
+    background: rgba(255,255,255,.15);
+    border-radius: 4px;
+    transition: background .3s ease;
+  }
+  .slide ::-webkit-scrollbar-thumb:hover{background: rgba(255,255,255,.28)}
+  .slide.light ::-webkit-scrollbar-thumb{background: rgba(0,0,0,.15)}
+  .slide.light ::-webkit-scrollbar-thumb:hover{background: rgba(0,0,0,.28)}
+  .slide{scrollbar-width:thin; scrollbar-color: rgba(255,255,255,.15) transparent}
+  .slide.light{scrollbar-color: rgba(0,0,0,.15) transparent}
+
   /* ============ 响应式 ============ */
   @media (max-width:768px){
-    .slide{padding:5vh 5vw 8vh 5vw}
+    .slide{padding:5vh 5vw 8vh 5vw; overflow-y:auto; -webkit-overflow-scrolling:touch}
+    .frame{overflow:visible; min-height:auto}
     .display-zh{font-size:10vw}
     .h1-zh{font-size:6.5vw}
     .h2-zh{font-size:4.5vw}

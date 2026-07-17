@@ -513,11 +513,22 @@
   body.low-power.motion-ready [data-anim],
   body.low-power [data-anim]{opacity:1!important;transform:none!important}
 
-  /* ---------- 滚动条样式优化 ---------- */
-  .slide ::-webkit-scrollbar{width:4px}
+  /* ---------- 精致滚动条 ---------- */
+  .slide ::-webkit-scrollbar{width:4px;height:4px}
   .slide ::-webkit-scrollbar-track{background:transparent}
-  .slide ::-webkit-scrollbar-thumb{background:rgba(127,127,127,.3);border-radius:2px}
-  .slide ::-webkit-scrollbar-thumb:hover{background:rgba(127,127,127,.5)}
+  .slide ::-webkit-scrollbar-thumb{
+    background: rgba(127,127,127,.3);
+    border-radius: 4px;
+    transition: background .3s ease;
+  }
+  .slide ::-webkit-scrollbar-thumb:hover{background: rgba(127,127,127,.5)}
+  .slide.dark ::-webkit-scrollbar-thumb{background: rgba(255,255,255,.15)}
+  .slide.dark ::-webkit-scrollbar-thumb:hover{background: rgba(255,255,255,.28)}
+  .slide.light ::-webkit-scrollbar-thumb{background: rgba(0,0,0,.15)}
+  .slide.light ::-webkit-scrollbar-thumb:hover{background: rgba(0,0,0,.28)}
+  .slide{scrollbar-width:thin; scrollbar-color: rgba(127,127,127,.3) transparent}
+  .slide.dark{scrollbar-color: rgba(255,255,255,.15) transparent}
+  .slide.light{scrollbar-color: rgba(0,0,0,.15) transparent}
 
   /* ---------- 选中文字样式 ---------- */
   ::selection{background:var(--accent);color:var(--ink-deep)}
@@ -534,7 +545,8 @@
     .h-sub{font-size:4.5vw}
     .lead{font-size:2.8vw}
     .body-zh,.body-serif{font-size:max(13.5px,2.2vw)}
-    .slide{padding:4vh 5vw 10vh 5vw}
+    .slide{padding:4vh 5vw 10vh 5vw; overflow-y:auto; -webkit-overflow-scrolling:touch}
+    .frame{overflow:visible; min-height:auto}
     .pipeline{grid-template-columns:repeat(2,1fr)}
     .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
     .grid-3,.grid-6,.grid-9{grid-template-columns:repeat(2,1fr)}
@@ -1350,7 +1362,7 @@
 <section class="slide hero dark">
   <div class="chrome"><div>收尾</div></div>
   <div class="frame center" style="min-height:80vh">
-    <div class="ghost accent" data-anim>48</div>
+    <div class="ghost accent" data-anim style="font-size:36vw; right:-6vw; bottom:-8vw; left:auto; top:auto; transform:none; opacity:.05">48</div>
     <div class="kicker accent" data-anim>Closing &middot; 金句</div>
     <h1 class="h-xl" data-anim style="max-width:58vw; line-height:1.2">碰撞不是终点，<br/>调研才是起点。<br/><span class="accent-text">分享让思考可见。</span></h1>
     <div class="rule accent" style="width:6vw; margin:3vh auto" data-anim></div>
