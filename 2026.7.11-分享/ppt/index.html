@@ -1,0 +1,1766 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 碰撞周会 · 调研分享</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ============ 主题色(墨水经典 · 优化版) ============ */
+    --ink:#0a1628;
+    --ink-rgb:10,22,40;
+    --ink-deep:#060d1a;
+    --ink-deep-rgb:6,13,26;
+    --paper:#f5f3ef;
+    --paper-rgb:245,243,239;
+    --paper-warm:#ebe7df;
+    --paper-warm-rgb:235,231,223;
+    --paper-tint:#e4e0d8;
+    --ink-tint:#152238;
+    
+    /* 强调色 · 暖金 */
+    --accent:#c9a96e;
+    --accent-rgb:201,169,110;
+    --accent-soft:#d4b97f;
+    --accent-deep:#b89656;
+
+    /* ============ 字体(跨主题固定) ============ */
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+    
+    /* ============ 间距系统(4px基数) ============ */
+    --space-1:4px;
+    --space-2:8px;
+    --space-3:12px;
+    --space-4:16px;
+    --space-6:24px;
+    --space-8:32px;
+    --space-12:48px;
+    --space-16:64px;
+    --space-20:80px;
+    
+    /* ============ 动效曲线 ============ */
+    --ease-out-expo:cubic-bezier(.16,1,.3,1);
+    --ease-out-quart:cubic-bezier(.25,1,.5,1);
+    --ease-in-out:cubic-bezier(.65,0,.35,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink-deep);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale}
+
+  /* ============ WebGL 双背景 ============ */
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.6s var(--ease-out-expo)}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+
+  /* ============ Deck 容器 + 翻页 ============ */
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform 1.1s var(--ease-out-expo);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:5.5vh 5.5vw 9vh 5.5vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink-deep)}
+
+  /* 遮罩层优化 · 更细腻的渐变 */
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background 1s var(--ease-out-quart)}
+  .slide.light::before{background:linear-gradient(180deg,rgba(var(--paper-rgb),.82) 0%,rgba(var(--paper-rgb),.72) 50%,rgba(var(--paper-rgb),.82) 100%);backdrop-filter:blur(2px)}
+  .slide.dark::before{background:linear-gradient(180deg,rgba(var(--ink-deep-rgb),.85) 0%,rgba(var(--ink-rgb),.72) 50%,rgba(var(--ink-deep-rgb),.85) 100%);backdrop-filter:blur(2px)}
+  /* Hero 页：遮罩降低，让背景透出 */
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.12);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-deep-rgb),.08);backdrop-filter:none}
+  /* Hero 页顶底渐隐 */
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.35) 0%,rgba(var(--paper-rgb),0) 18%,rgba(var(--paper-rgb),0) 82%,rgba(var(--paper-rgb),.35) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-deep-rgb),.4) 0%,rgba(var(--ink-rgb),0) 18%,rgba(var(--ink-rgb),0) 82%,rgba(var(--ink-deep-rgb),.4) 100%)}
+
+  /* ============ Magazine chrome：顶部 meta + 底部 foot ============ */
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;opacity:.65;font-weight:400}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:36px;height:1px;background:currentColor;opacity:.35}
+  .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.06em;text-transform:none;opacity:.7;font-size:12.5px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;padding:7px 16px;border:1px solid currentColor;opacity:.8;transition:all .3s var(--ease-out-quart)}
+  .tag:hover{opacity:1;background:currentColor}
+  .slide.dark .tag:hover{color:var(--ink-deep)}
+  .slide.light .tag:hover{color:var(--paper)}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.2;margin:2.8vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+  .rule.accent{background:var(--accent);opacity:.6}
+
+  /* ============ 字体规则(优化版) ============
+     · 衬线（Noto Serif SC / Playfair）：大标题、重点金句、数字
+     · 非衬线（Noto Sans SC）：正文描述、body、补充说明
+     · 等宽（IBM Plex Mono）：kicker、meta 小标签、foot 右侧
+  */
+  .kicker{font-family:var(--mono);font-size:12.5px;letter-spacing:.3em;text-transform:uppercase;opacity:.55;margin-bottom:2.4vh;font-weight:500}
+  .kicker.accent{color:var(--accent);opacity:1}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0;text-wrap:balance}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(16px,1.35vw);line-height:1.85;opacity:.8;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(16px,1.38vw);line-height:1.78;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.8vw;line-height:1.45;opacity:.82}
+  .meta{font-family:var(--mono);font-size:max(10.5px,.85vw);letter-spacing:.18em;text-transform:uppercase;opacity:.55}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:28vw;line-height:.8;opacity:.04;letter-spacing:-.04em;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-feature-settings:"tnum";user-select:none;pointer-events:none;z-index:0}
+  .ghost.accent{color:var(--accent);opacity:.06}
+  /* ghost背景下的内容要在上层 */
+  .frame > .kicker,
+  .frame > h1,
+  .frame > h2,
+  .frame > .h-xl,
+  .frame > .rule,
+  .frame > .lead,
+  .frame > p{position:relative;z-index:1}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+  .accent-text{color:var(--accent)}
+  strong{font-weight:700;color:inherit}
+
+  /* ============ 布局工具 ============ */
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  /* 内容较少的页面：垂直居中，避免底部空一大段 */
+  .frame.content-center{justify-content:center}
+  .frame.content-center .kicker{margin-bottom:2vh}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  /* ============ Stat（数字矩阵）· 优化版 ============ */
+  .stat{display:flex;flex-direction:column;gap:.9vh;align-items:flex-start;position:relative}
+  .stat::before{content:"";position:absolute;top:0;left:0;width:28px;height:2px;background:var(--accent);opacity:.7;transform-origin:left;transform:scaleX(0);transition:transform .8s var(--ease-out-expo) .2s}
+  .slide[data-anim-active] .stat::before{transform:scaleX(1)}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:7.5vw;line-height:.9;letter-spacing:-.03em;font-feature-settings:"tnum";padding-top:1.4vh;border-top:1px solid currentColor;border-color:rgba(127,127,127,.28)}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.02vw);opacity:.68;margin-top:.9vh;font-weight:400;line-height:1.55}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+  .stat .accent-line{width:28px;height:2px;background:var(--accent);opacity:.7;margin-bottom:1.2vh}
+
+  /* ============ Callout（引用框）· 优化版 ============ */
+  .callout{padding:2.8vh 2.2vw;border-left:3px solid var(--accent);position:relative;font-family:var(--serif-zh);font-size:max(14.5px,1.15vw);line-height:1.6;opacity:.92;transition:all .4s var(--ease-out-quart)}
+  .slide.light .callout{background:linear-gradient(90deg,rgba(var(--accent-rgb),.08) 0%,rgba(var(--ink-rgb),.03) 100%)}
+  .slide.dark .callout{background:linear-gradient(90deg,rgba(var(--accent-rgb),.1) 0%,rgba(var(--paper-rgb),.04) 100%)}
+  .callout:hover{transform:translateX(4px)}
+  .callout .cite{display:block;margin-top:1.8vh;font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;opacity:.55}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(16px,1.5vw);line-height:1.45}
+
+  /* ============ Platform（平台卡）· 优化版 ============ */
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:1.8vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.3);transition:all .4s var(--ease-out-quart);position:relative;overflow:hidden}
+  .plat::before{content:"";position:absolute;top:0;left:0;width:0;height:2px;background:var(--accent);transition:width .6s var(--ease-out-expo)}
+  .plat:hover::before{width:100%}
+  .plat:hover{transform:translateY(-2px)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw;margin-bottom:.5vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.52;margin-top:.5vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.2vw;opacity:.25;letter-spacing:-.01em;line-height:1}
+
+  /* ============ Rowline（表格行）· 优化版 ============ */
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.22);transition:all .3s var(--ease-out-quart);position:relative}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.22)}
+  .rowline:hover{background:rgba(var(--accent-rgb),.05)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.6vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(13.5px,1.12vw);opacity:.82;line-height:1.6}
+  .rowline .m{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;opacity:.55;justify-self:end}
+
+  /* ============ Pillar（支柱卡片）· 优化版 ============ */
+  .pillar{display:flex;flex-direction:column;gap:1.6vh;position:relative;padding-top:1.6vh;border-top:1px solid currentColor;border-color:rgba(127,127,127,.28);transition:all .4s var(--ease-out-quart)}
+  .pillar:hover{transform:translateY(-3px)}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.4vw;opacity:.4;font-weight:400;color:var(--accent)}
+  .pillar .ic svg{width:2.6vw;height:2.6vw;stroke-width:1.2;opacity:.8;stroke:var(--accent)}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.2vw;line-height:1.15}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(13.5px,1.05vw);opacity:.72;line-height:1.65}
+
+  /* ============ Signature / Highlight · 优化版 ============ */
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.9vw;opacity:.65}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.12em;right:-.12em;bottom:-.08em;height:.35em;background:linear-gradient(180deg,transparent 40%,rgba(var(--accent-rgb),.25) 40%);z-index:-1;border-radius:1px}
+  .slide.light .hi::after{content:"";position:absolute;left:-.12em;right:-.12em;bottom:-.08em;height:.35em;background:linear-gradient(180deg,transparent 40%,rgba(var(--accent-rgb),.35) 40%);z-index:-1;border-radius:1px}
+
+  /* ============ Icons（Lucide via CDN） ============ */
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  /* ============ 图片占位（虚线框，提示设计师位置） ============ */
+  .img-slot{border:1.5px dashed rgba(127,127,127,.35);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.5;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box;border-radius:2px}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.15}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.45;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  /* ============ 图片实填框（优化版） ============ */
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:3px;transition:transform .6s var(--ease-out-expo),box-shadow .4s ease}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1)}
+  .frame-img:hover{transform:translateY(-4px);box-shadow:0 20px 60px -20px rgba(0,0,0,.4)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;transition:transform 1.2s var(--ease-out-expo)}
+  .frame-img:hover > img{transform:scale(1.03)}
+  .frame-img.fit-contain > img{object-fit:contain;object-position:center center}
+  .frame-img.r-16x9{aspect-ratio:16/9;max-height:64vh}
+  .frame-img.r-16x10{aspect-ratio:16/10;max-height:56vh}
+  .frame-img.r-4x3{aspect-ratio:4/3;max-height:56vh}
+  .frame-img.r-3x2{aspect-ratio:3/2;max-height:46vh}
+  .frame-img.r-3x4{aspect-ratio:3/4;max-height:60vh}
+  .frame-img.r-1x1{aspect-ratio:1/1;max-height:50vh}
+  .frame-img.h-16{height:16vh}
+  .frame-img.h-18{height:18vh}
+  .frame-img.h-22{height:22vh}
+  .frame-img.h-26{height:26vh}
+  .frame-img.h-28{height:28vh}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.9vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.68}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(12.5px,.95vw);letter-spacing:.04em;text-transform:none;opacity:.92}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(14px,1.15vw);letter-spacing:.02em;text-transform:none;opacity:.85}
+  .frame-cap .idx{font-family:var(--mono);opacity:.45}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  /* ============ 导航 · 优化版 ============ */
+  #nav{position:fixed;left:50%;bottom:2.4vh;transform:translateX(-50%);z-index:30;display:flex;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(0,0,0,.15);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border:1px solid rgba(255,255,255,.06)}
+  #nav .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:all .35s var(--ease-out-quart);border:0;padding:0;position:relative}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.2)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:20px;border-radius:999px}
+  #nav .dot.active::before{content:"";position:absolute;inset:-2px;border-radius:999px;background:var(--accent);opacity:.3;z-index:-1;filter:blur(4px)}
+  body.light-bg #nav{background:rgba(255,255,255,.22);border-color:rgba(0,0,0,.06)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.22)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.88)}
+  body.light-bg #nav .dot.active::before{background:var(--accent);opacity:.4}
+  #hint{position:fixed;bottom:2.8vh;right:2.8vw;z-index:30;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;opacity:.35;mix-blend-mode:difference;color:#aaa;transition:opacity .3s}
+  #hint:hover{opacity:.6}
+  body.low-power #hint{opacity:.65;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+
+  /* ============================================================
+     ============ LAYOUTS API · 面向 agent 的类（v2）============
+     所有 layouts.md 中的骨架都基于下面这套命名。
+     如果你在 layouts.md 里看到某个类，它必须在下面有定义。
+     ============================================================ */
+
+  /* ---------- .frame：每页主内容容器 ---------- */
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  /* 当 .frame 同时加了 grid 类时，grid 的 display:grid 覆盖 flex */
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  /* ---------- 标题层级（API 名称，衬线为主）· 优化版 ---------- */
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:9.5vw;
+    line-height:.98;
+    letter-spacing:-.02em;
+    text-wrap:balance;
+  }
+  .h-hero .accent-text{color:var(--accent);font-weight:700}
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:5.8vw;
+    line-height:1.1;
+    letter-spacing:-.01em;
+    max-width:90vw;
+    text-wrap:balance;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:2.9vw;
+    line-height:1.3;
+    letter-spacing:0;
+    opacity:.65;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.2vw;
+    line-height:1.35;
+  }
+  /* 英文标题专用（Playfair 衬线） */
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+
+  /* ---------- lead 引语 ---------- */
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.7vw;
+    line-height:1.55;
+    opacity:.8;
+    max-width:72vw !important;
+    text-wrap:balance;
+  }
+
+  /* ---------- meta-row 底部元数据 ---------- */
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(11.5px,.88vw);
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    opacity:.55;
+  }
+
+  /* ---------- stat-card（数据大字报用）· 优化版 ---------- */
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.7vh;
+    align-items:flex-start;
+    padding-top:1.5vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.28);
+    position:relative;
+    transition:all .4s var(--ease-out-quart);
+  }
+  .stat-card::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;
+    width:32px;height:2px;
+    background:var(--accent);
+    opacity:.7;
+  }
+  .stat-card:hover{transform:translateY(-2px)}
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(9.5px,.75vw);
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    opacity:.5;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.4vw;
+    line-height:.92;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.5vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.36em;
+    letter-spacing:0;
+    opacity:.68;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12.5px,1vw);
+    line-height:1.55;
+    opacity:.68;
+    margin-top:.5vh;
+  }
+  /* 当 stat-card 用于 grid-4（2x2），数字适度放大；若页面有标题+引文在上方，可内联 style 覆盖为更小值 */
+  .grid-4 .stat-card .stat-nb{font-size:4.8vw}
+  /* 当只有 3 个，字也可以稍大 */
+  .grid-3 .stat-card .stat-nb{font-size:6.4vw}
+
+  /* ---------- pipeline（流水线）· 优化版 ---------- */
+  .pipeline-section{
+    margin-top:4.2vh;
+    padding-top:2.6vh;
+    border-top:1px dashed rgba(127,127,127,.28);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:2.8vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(10.5px,.82vw);
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    opacity:.58;
+    margin-bottom:2vh;
+    color:var(--accent);
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.7vh;
+    padding-top:1.3vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.32);
+    position:relative;
+    transition:all .4s var(--ease-out-quart);
+  }
+  .step:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.1vw;
+    opacity:.4;
+    color:var(--accent);
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.5vw;
+    letter-spacing:.01em;
+    line-height:1.25;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(11.5px,.92vw);
+    line-height:1.5;
+    opacity:.68;
+  }
+
+  /* ---------- 网格（layouts.md 所用） ---------- */
+  /* 这些类独立挂到任何容器上都能生效，不依赖 .frame 复合选择器 */
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+  /* grid-6 已在旧样式里定义为 3x2，这里仅补 align */
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center}
+
+  /* ---------- 图片 frame-img（layouts.md 主命名） ---------- */
+  /* 在旧样式里已定义，这里补 img-cap 命名别名与增强 */
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  /* callout src 命名别名 */
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- 方向页三栏通用 ---------- */
+  .dir-col{display:flex;flex-direction:column;gap:1.2vh}
+  .dir-col .kicker{margin-bottom:0}
+  .dir-col .body-zh{opacity:.9;line-height:1.7}
+
+  /* ---------- chrome & foot 补位（layouts.md 简单写法）· 优化版 ---------- */
+  .chrome{font-family:var(--mono);font-size:max(10.5px,.75vw);letter-spacing:.22em;text-transform:uppercase;opacity:.62}
+  .foot{font-family:var(--mono);font-size:max(10.5px,.75vw);letter-spacing:.18em;text-transform:uppercase;opacity:.48}
+
+  /* ============ 动效系统(Motion One 驱动) ============
+     所有 [data-anim] 元素默认隐藏,进入页面时由 JS 逐个揭示。
+     - cascade(默认):按 DOM 顺序 stagger 120ms 淡入 + y:16→0
+     - hero(hero 页自动):慢一点的 stagger 180ms
+     - quote(含 [data-anim="line"]):逐行 600ms 淡入
+     - directional(含 [data-anim="left|right"]):左→分隔线→右
+     - pipeline(data-animate="pipeline"):Space/→ 手动推进
+     Motion One 没加载成功时(CDN 断 + 本地丢),所有 [data-anim] 会兜底显示。
+  */
+  [data-anim]{opacity:1}
+  body.motion-ready [data-anim]{opacity:0}
+  body.motion-ready [data-anim="left"]{transform:translateX(-28px)}
+  body.motion-ready [data-anim="right"]{transform:translateX(28px)}
+  body.motion-ready [data-anim="line"]{opacity:0;transform:translateY(12px)}
+  body.motion-ready [data-animate="pipeline"] [data-anim]{opacity:.15}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power.motion-ready [data-anim],
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+
+  /* ---------- 滚动条样式优化 ---------- */
+  .slide ::-webkit-scrollbar{width:4px}
+  .slide ::-webkit-scrollbar-track{background:transparent}
+  .slide ::-webkit-scrollbar-thumb{background:rgba(127,127,127,.3);border-radius:2px}
+  .slide ::-webkit-scrollbar-thumb:hover{background:rgba(127,127,127,.5)}
+
+  /* ---------- 选中文字样式 ---------- */
+  ::selection{background:var(--accent);color:var(--ink-deep)}
+  .slide.dark ::selection{background:var(--accent);color:var(--ink-deep)}
+  .slide.light ::selection{background:var(--accent);color:var(--paper)}
+
+  /* ---------- 响应式降级 ---------- */
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:13vw}
+    .h-xl{font-size:8.5vw}
+    .h-sub{font-size:4.5vw}
+    .lead{font-size:2.8vw}
+    .body-zh,.body-serif{font-size:max(13.5px,2.2vw)}
+    .slide{padding:4vh 5vw 10vh 5vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+    .grid-3,.grid-6,.grid-9{grid-template-columns:repeat(2,1fr)}
+    .grid-4{grid-template-columns:1fr}
+    .stat .n,.stat-card .stat-nb{font-size:12vw}
+    .h-md{font-size:3.5vw}
+    .rowline{grid-template-columns:1fr;gap:1vh}
+    .rowline .m{justify-self:start}
+  }
+
+  @media (max-width:600px){
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:10vw}
+    .grid-3,.grid-6,.grid-9{grid-template-columns:1fr}
+    .pipeline{grid-template-columns:1fr}
+    .chrome{font-size:10px}
+    .foot{font-size:9.5px}
+  }
+</style>
+</head>
+<body>
+<script>
+  (function(){
+    const KEY = 'guizang-ppt-low-power';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored = localStorage.getItem(KEY);
+    window.__lowPowerMode = stored === '1' || (stored === null && reduced);
+    function updateHint(){
+      const hint = document.getElementById('hint');
+      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
+    }
+    window.__setLowPowerMode = function(on, opts={}){
+      window.__lowPowerMode = !!on;
+      document.body.classList.toggle('low-power', window.__lowPowerMode);
+      if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+      if(window.__lowPowerMode && document.getAnimations){
+        document.getAnimations().forEach(a=>a.cancel());
+      }
+      updateHint();
+      dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+      if(window.__playSlide) window.__playSlide(window.__currentSlideIndex || 0);
+    };
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    addEventListener('DOMContentLoaded', updateHint, {once:true});
+  })();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">← → 翻页 · B 静态 · ESC 索引</div>
+
+<div id="deck">
+
+
+
+<!-- ================================
+     SLIDES v2 &middot; 每方向拆为 标题页+3内容页 &middot; 连续编号
+     总计 48 页
+     ================================ -->
+
+<!-- ============ 01 ============ -->
+<section class="slide hero dark">
+  <div class="chrome"><div>AI 碰撞周会 &middot; 调研分享</div></div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker accent" data-anim>上周碰撞 &rarr; 调研产出 &middot; 本周分享汇总</div>
+    <h1 class="h-hero" data-anim>AI 周会<span class="accent-text">调研分享</span></h1>
+    <h2 class="h-sub" data-anim>把碰撞后的调研，变成可浏览的分享</h2>
+    <p class="lead" style="max-width:60vw" data-anim>四主题调研产出汇总 &middot; 版权规则重构 / 垂直数据与数字分身 / 粉丝精神需求 / 舆情风险管理。</p>
+    <div class="rule accent" style="width:8vw" data-anim></div>
+    <div class="meta-row" data-anim"><span>调研汇总</span><span>&middot;</span><span>可公开浏览版</span></div>
+  </div>
+  <div class="foot"><div>一场关于 AI &times; 文化 / IP 的分享</div></div>
+</section>
+
+<!-- ============ 02 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>目录 &middot; Agenda</div></div>
+  <div class="frame content-center" style="padding-top:4vh">
+    <div class="kicker accent" data-anim>Agenda &middot; 四个调研主题</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:5vh">四个调研主题</h2>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:2.5vw">
+      <div data-anim style="border-top:2px solid var(--accent); padding-top:1.8vh"><div class="h-md" style="margin-bottom:1vh"><span style="color:var(--accent);font-family:var(--serif-en);font-style:italic;font-weight:500;margin-right:.5em">01</span>版权规则重构</div><p class="body-zh">从「防复制」转向「鼓励复制＋可溯源」。</p></div>
+      <div data-anim style="border-top:2px solid var(--accent); padding-top:1.8vh"><div class="h-md" style="margin-bottom:1vh"><span style="color:var(--accent);font-family:var(--serif-en);font-style:italic;font-weight:500;margin-right:.5em">02</span>垂直数据与分身</div><p class="body-zh">垂直数据＝壁垒；IP 数字分身三阶段。</p></div>
+      <div data-anim style="border-top:2px solid var(--accent); padding-top:1.8vh"><div class="h-md" style="margin-bottom:1vh"><span style="color:var(--accent);font-family:var(--serif-en);font-style:italic;font-weight:500;margin-right:.5em">03</span>粉丝精神需求</div><p class="body-zh">萨提亚 / SDT 双理论；精神能量角色。</p></div>
+      <div data-anim style="border-top:2px solid var(--accent); padding-top:1.8vh"><div class="h-md" style="margin-bottom:1vh"><span style="color:var(--accent);font-family:var(--serif-en);font-style:italic;font-weight:500;margin-right:.5em">04</span>舆情风险管理</div><p class="body-zh">共创受控不失控；风控变产品护盾。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div>目录</div></div>
+</section>
+
+<!-- ============ 03 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题一 &middot; 版权规则重构</div></div>
+  <div class="frame" style="display:grid; gap:6vh; align-content:center; min-height:80vh">
+    <h1 class="h-hero" style="font-size:8.5vw" data-anim>版权规则重构</h1>
+    <p class="lead" style="max-width:55vw" data-anim>从「防复制」，到「鼓励复制＋可溯源」</p>
+  </div>
+  <div class="foot"><div>主题一 &middot; 版权规则重构</div></div>
+</section>
+
+<!-- ============ 04 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>主题一 &middot; 核心结论</div></div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>五条核心结论 &middot; 直接引自调研文档</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.2vh">版权规则重构的五个判断</h2>
+    <div style="display:flex; flex-direction:column">
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">①「可溯源」正从可选项变成全球强制项</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">C2PA 已升格 ISO/IEC 22144，Google、OpenAI、Adobe 默认嵌入 C2PA 凭证＋SynthID 隐形水印；欧盟《AI 法案》第 50 条与加州 SB 942 同于 2026-08-02 施行，把机器可读溯源设为法定义务——监管在「鼓励流通＋强制标识」，而非「禁止复制」。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">② 技术分层已清晰</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">溯源交给 C2PA / 隐形水印，分润留给区块链账本——Story Protocol（2025-02 主网）、Camp Network 已在做「链上 IP＋实时版税」。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">③ 隐形水印已商用但非铁证</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">SynthID 已为超 100 亿份内容打标，但滑铁卢大学 UnMarker 研究证明 SynthID/Stable Signature 可在 &gt;50% 成功率下被绕过。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">④ 法律走向「强标识＋训练数据透明」且有价格信号</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">Anthropic 案（2025-06）以约 15 亿美元和解（史上最大版权集体和解）；中国《生成式 AI 内容标识办法》2025-09-01 施行。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">⑤ IP 资产化从概念走向制度，C 端微授权仍是空白机会</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">文旅部长三角试点（2024-11）已启动；音乐领域 Hoopr micro-sync 分成先例可借鉴——平台级成熟，面向粉丝二创的 C 端微授权仍是空白地带。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>主题一 &middot; 结论</div></div>
+</section>
+
+<!-- ============ 05 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题一 &middot; 方向一 &middot; 溯源技术</div></div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>方向一 &middot; 溯源技术</div>
+    <h1 style="font-family:var(--serif-zh); font-weight:900; font-size:6.5vw; line-height:1.06" data-anim>AI 版权溯源技术</h1>
+    <p class="lead" style="max-width:60vw" data-anim>整个行业正在往一套叫 C2PA 的开放标准上收敛——给每张图、每段视频发一张「数字身份证」。</p>
+  </div>
+  <div class="foot"><div>主题一 &middot; 方向一</div></div>
+</section>
+
+<!-- ============ 06 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题一 &middot; 方向一 &middot; 我们聊过什么</div></div>
+  <div class="frame content-center" style="padding-top:5vh">
+    <div class="kicker" data-anim>Direction 一 &middot; 我们聊过什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:3vh">溯源技术 &middot; 会议讨论</h2>
+    <div class="callout" data-anim><div class="q-big">会议讨论中我们明确：「复制成本归零，100 万人复制你告谁」，旧「防伪标/授权费量化」模式失效；成员补充的技术路径包括 AI 溯源检索、隐形数字水印、大模型版权屏蔽（即梦已实现）。本方向对应「防复制失效后，靠什么追踪每一次复制」的底层问题——即我们一直主张的「鼓励复制＋可溯源」的技术底座。</div></div>
+  </div>
+  <div class="foot"><div>主题一 &middot; 方向一 &middot; 我们聊过什么</div></div>
+</section>
+
+<!-- ============ 07 ============ -->
+<section class="slide light" data-animate="content">
+  <div class="chrome"><div>主题一 &middot; 方向一 &middot; 外部检索事实</div></div>
+  <div class="frame" style="padding-top:4vh; overflow-y:auto">
+    <div class="kicker" data-anim>Direction 一 &middot; 外部检索事实</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">溯源技术 &middot; 调研发现</h2>
+    <div class="body-serif" style="line-height:1.72; opacity:.9">
+      <p data-anim>整个行业正在往一套叫 <strong>C2PA（Content Credentials）</strong> 的开放标准上收敛——简单说，它给每张图、每段视频发一张「数字身份证」：谁生成的、用什么工具生成的、中间改过几次，全部写进文件元数据里，任何人和平台都能直接读取。这套标准由 Linux Foundation 下的联盟维护，Google、Meta、Adobe、OpenAI、Sony、Nikon 等 6000 多家机构都加入了，而且 <strong>2025 年已经从行业规范正式升格成了 ISO/IEC 22144 国际标准</strong>。换句话说，「内容要可溯源」已经不是某家公司的产品功能，而是正在变成全行业的基础设施。</p>
+      <p style="margin-top:2vh" data-anim>光有标准还不够——这张「身份证」得保证没被人伪造才行。所以 C2PA 搭了一套叫<strong>一致性计划（Conformance Program）</strong>的认证体系：专门给做生成工具、验证工具和证书机构的厂商发认证，只有通过认证的产品才能进入公开的合规列表。配套的官方「信任列表（Trust List）」2025 年中上线；标准本身也迭代到了 v2.2（2025-05），连视频流和多格式都支持了。</p>
+      <p style="margin-top:2vh" data-anim>大厂已经开始行动了。Google 从 2025-11-20 起把自己所有生成图像（Gemini 产的图、Veo 产的视）默认嵌入两层：一层是自家的 <strong>SynthID 隐形水印</strong>，另一层就是 C2PA 元数据；还在 Gemini 里加了一个按钮让用户可以直接验证「这张图是不是 AI 生成的」。OpenAI 这边 DALL·E 3 和 Sora 2 都签了 C2PA。</p>
+      <p style="margin-top:2vh" data-anim>监管层也在往同一个方向收拢。欧盟<strong>《AI 法案》第 50 条</strong>的透明度义务 2026-08-02 就要施行了，要求所有生成式 AI 的产出必须以机器可读格式标记来源；美国加州的 <strong>SB 942 法案</strong>也是同一天生效。从行业标准到企业默认动作再到法律强制要求——<strong>不阻止你复制，但要让你复制的每一步都可追踪</strong>。</p>
+    </div>
+  </div>
+  <div class="foot"><div>主题一 &middot; 方向一 &middot; 外部事实</div></div>
+</section>
+
+<!-- ============ 08 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题一 &middot; 方向一 &middot; 对我们意味着什么</div></div>
+  <div class="frame content-center" style="display:grid; gap:3vh; align-content:center; min-height:80vh; max-width:76vw">
+    <div class="kicker" data-anim>Direction 一 &middot; 对我们意味着什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:1.5vh">溯源技术 &middot; 判断与行动</h2>
+    <div class="callout" data-anim style="border-left-width:4px; padding:3vh 2.6vw">
+      <div class="body-serif" style="line-height:1.68; font-size:max(15px,1.28vw)">我们「鼓励复制＋可溯源」的判断不再是空想，而是正被监管与工业标准合力做成基础设施。我们应把「<strong>溯源层</strong>」建在成熟的 <strong>C2PA＋SynthID 之上</strong>（而非自研），把精力投向平台尚未做的「<strong>分润层</strong>」。风险在于：若只做「防复制」，反而与监管鼓励「标识＋流通」的取向相悖。</div>
+    </div>
+  </div>
+  <div class="foot"><div>主题一 &middot; 方向一 &middot; 意味着什么</div></div>
+</section>
+
+<!-- ============ 09 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题一 &middot; 方向二 &middot; 端微授权</div></div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>方向二 &middot; 端微授权</div>
+    <h1 style="font-family:var(--serif-zh); font-weight:900; font-size:6.5vw; line-height:1.06" data-anim>IP 授权的 C 端微变现模式</h1>
+    <p class="lead" style="max-width:60vw" data-anim>Hoopr 让独立音乐人直接分走收入的 50–65%——「小额、高频、按次分润」已在音乐领域被数据验证跑通。</p>
+  </div>
+  <div class="foot"><div>主题一 &middot; 方向二</div></div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题一 &middot; 方向二 &middot; 我们聊过什么</div></div>
+  <div class="frame content-center" style="padding-top:5vh">
+    <div class="kicker" data-anim>Direction 二 &middot; 我们聊过什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:3vh">端微授权 &middot; 会议讨论</h2>
+    <div class="callout" data-anim><div class="q-big">我们判断旧模式「防伪标/授权费量化」在物理时代可行、C 端无变现可能；而「鼓励复制＋可溯源」的本质是让用户（粉丝）在复制使用 IP 时按次分润。本方向寻找「粉丝用 IP 素材二创并按使用付费」的 C 端微授权先例。</div></div>
+  </div>
+  <div class="foot"><div>主题一 &middot; 方向二 &middot; 我们聊过什么</div></div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="slide light" data-animate="content">
+  <div class="chrome"><div>主题一 &middot; 方向二 &middot; 外部检索事实</div></div>
+  <div class="frame" style="padding-top:4vh; overflow-y:auto">
+    <div class="kicker" data-anim>Direction 二 &middot; 外部检索事实</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">端微授权 &middot; 调研发现</h2>
+    <div class="body-serif" style="line-height:1.72; opacity:.9"><p data-anim>「粉丝用了我的 IP 素材，能不能自动给我分钱？」这个问题听起来很理想化，但其实已经有跑通的真实案例了。最典型的是印度的 <strong>Hoopl</strong>，一个做 micro-sync 音乐授权的平台：品牌方或者创作者要用某位独立音乐人的歌，通过 Hoopl 授权之后，艺术家直接分走收入的 <strong>50–65%</strong>。过去三年它给 1500 多位音乐人分掉了大约 4.5 千万卢比；更重要的是，单笔 micro-licensing 的收益有时候能顶得上这位艺人在 Spotify 或 YouTube 上 48 万次播放的版税收入。<strong>「小额、高频、按次分润」这个模式在音乐领域已经被数据验证跑通了。</strong></p>
+<p style="margin-top:2vh" data-anim>Hoopl 只是冰山一角。2025 年涌现了一批围绕「微权利」做文章的早期项目：<strong>SplitSound.io</strong> 做 AI 音乐的微授权，<strong>Voxbit</strong> 做 AI 声音授权，<strong>SceneSplit</strong> 做短片剧本的版税分配，<strong>PromptBank</strong> 甚至在做热门提示词的收益分成——它们的共同点是让用户可以「拥有某段 AI 内容 0.1% 的收益权」并把这种微资产当成可交易的东西。</p><p style="margin-top:2vh" data-anim>还有一个旁证值得注意：<strong>泡泡玛特的 Labubu</strong>。设计师龙家升凭借 THE MONSTERS 系列（Labubu 是其中之一）拿到了大约 <strong>8% 的分成</strong>，一年半时间光 IP 分成就接近 <strong>3 亿元</strong>。这说明「IP 文化符号可以直接对应到可量化的现金收益」这件事在消费端已经被证明了——只不过目前发生在潮玩实物领域，还没迁移到数字内容的 C 端二创场景中来。</p><p style="margin-top:2vh" data-anim>综合来看：<strong>平台级的授权市场已经很成熟了，但面向普通粉丝做二创的 C 端微授权确实还是一个空白地带</strong>——这正是「旧模式 C 端无变现，新模式有机会把它变成可投资资产」的机会窗口。</div>
+  </div>
+  <div class="foot"><div>主题一 &middot; 方向二 &middot; 外部事实</div></div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题一 &middot; 方向二 &middot; 对我们意味着什么</div></div>
+  <div class="frame content-center" style="display:grid; gap:3vh; align-content:center; min-height:80vh; max-width:76vw">
+    <div class="kicker" data-anim>Direction 二 &middot; 对我们意味着什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:1.5vh">端微授权 &middot; 判断与行动</h2>
+    <div class="callout" data-anim style="border-left-width:4px; padding:3vh 2.6vw">
+      <div class="body-serif" style="line-height:1.68; font-size:max(15px,1.28vw)">平台级授权（视觉中国、Getty）成熟，但<strong>面向粉丝二创的 C 端微授权仍是空白</strong>——这正是「旧模式 C 端无变现，新模式可投资资产」的机会点。可借鉴 <strong>Hoopr 的按次分润</strong>与 <strong>Story Protocol 的链上版税</strong>，把「粉丝用 IP 素材二创」设计成可溯源、可分润的微授权产品。</div>
+    </div>
+  </div>
+  <div class="foot"><div>主题一 &middot; 方向二 &middot; 意味着什么</div></div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题一 &middot; 来源速读</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Sources &middot; 📖 来源速读</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">版权规则重构 &middot; 关键来源</h2>
+    <div style="display:flex; flex-direction:column">
+      <div class="rowline" data-anim>
+        <div class="k">C2PA 官方 conformance</div>
+        <div class="v">C2PA 是给内容发「数字身份证」的开放标准；页面讲它怎么认证合规产品、维护信任列表</div>
+        <div class="m">官方文件</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">Google 全面嵌入</div>
+        <div class="v">新闻：Google 宣布所有自家 AI 图默认打水印＋溯源信息</div>
+        <div class="m">行业媒体</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">EU AI Act 第50条</div>
+        <div class="v">解读欧盟 AI 法案透明度义务怎么落地、C2PA 为何是首选标记方案</div>
+        <div class="m">法律博客</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">加州 SB 942</div>
+        <div class="v">解读加州 AI 透明法：大厂须提供免费检测工具＋潜标识</div>
+        <div class="m">法律博客</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">Anthropic 15亿和解</div>
+        <div class="v">NPR：Anthropic 以约 15 亿美元和解，史上最大版权集体和解</div>
+        <div class="m">权威媒体</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">Hoopr 分成报道</div>
+        <div class="v">印度 micro-sync 平台 Hoopr 给音乐人按次分润，1500+艺人受益</div>
+        <div class="m">行业媒体</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">泡泡玛特/Labubu</div>
+        <div class="v">网易：Labubu 设计师分成近 3 亿，IP 量化收益成立</div>
+        <div class="m">权威媒体</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>主题一 &middot; 来源速读</div></div>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="slide hero dark">
+  <div class="chrome"><div>主题二 &middot; 垂直数据与数字分身</div></div>
+  <div class="frame" style="display:grid; gap:6vh; align-content:center; min-height:80vh">
+    <h1 class="h-hero" style="font-size:8.5vw" data-anim>垂直数据与数字分身</h1>
+    <p class="lead" style="max-width:55vw" data-anim>垂直数据＝壁垒；IP 数字分身三阶段</p>
+  </div>
+  <div class="foot"><div>主题二 &middot; 垂直数据与数字分身</div></div>
+</section>
+
+<!-- ============ 15 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>主题二 &middot; 核心结论</div></div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>五条核心结论 &middot; 直接引自调研文档</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.2vh">垂直数据与数字分身的五个判断</h2>
+    <div style="display:flex; flex-direction:column">
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">① 垂直数据被政策与产业双重确认为 AI 核心壁垒</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">医疗并购小模型要求 99.99%+ 准确率、数据只能来自科研单位；云蝶科技、百望股份、中康科技、蜜度普遍以「独家行业数据＋持续更新闭环」构筑护城河——算法本身反倒是容易同质化的部分。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">② IP 价值评估有了国家级技术底座</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">GB/T 46353-2025《数据资产价值评估》国标 2026-05-01 施行；《文化数字资产价值评估指南》国标 2025-12-02 发布——构成「技术规范＋执业准则」双轮。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">③ 数字人产业规模化且司法确权清晰，但高仿真红线明确</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">2025 数字人核心市场突破 480 亿、带动 6400 亿；法院多案确认「具独创性的虚拟数字人形象构成美术作品」；但 99% 仿真度触发四重风险，抖音已严打冒充真人直播。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">④ 粉丝共创经济国内外均有验证，国内仍处制度创新空白</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">INTERISTA 行为忠诚计划（11 级、双货币、25 万+注册）；Gujarat Titans AI 个性化使 DAU +62.45%；国内周可可/卜卜、雪王 AI 共创显示潜力，但尚无三方分润成熟产品。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">⑤ DAO/NFT 路径在国内被强监管封死，须走「去代币化」</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">虚拟货币交易/ICO/NFT 金融化均属非法金融活动（2025 七协会联合风险提示）；「集体拥有」应改用积分/分成/优先体验等合规机制实现。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>主题二 &middot; 结论</div></div>
+</section>
+
+<!-- ============ 16 ============ -->
+<section class="slide hero dark">
+  <div class="chrome"><div>主题二 &middot; 方向一 &middot; 垂直数据壁垒</div></div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>方向一 &middot; 垂直数据壁垒</div>
+    <h1 style="font-family:var(--serif-zh); font-weight:900; font-size:6.5vw; line-height:1.06" data-anim>垂直领域小模型案例</h1>
+    <p class="lead" style="max-width:60vw" data-anim>一批垂直 AI 企业靠「独家行业数据＋持续更新闭环」筑起护城河——算法本身反倒容易同质化。</p>
+  </div>
+  <div class="foot"><div>主题二 &middot; 方向一</div></div>
+</section>
+
+<!-- ============ 17 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题二 &middot; 方向一 &middot; 我们聊过什么</div></div>
+  <div class="frame content-center" style="padding-top:5vh">
+    <div class="kicker" data-anim>Direction 一 &middot; 我们聊过什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:3vh">垂直数据壁垒 &middot; 会议讨论</h2>
+    <div class="callout" data-anim><div class="q-big">会议讨论中我们明确——用两案例说明垂直数据是 AI 核心壁垒——AI 租房痛点「沟通」需中介垂直数据；医疗并购小模型准确率要求 99.99%+，数据只能来自科研单位。回到自身：当前 IP 价值评估粗糙，需垂直深度数据。</div></div>
+  </div>
+  <div class="foot"><div>主题二 &middot; 方向一 &middot; 我们聊过什么</div></div>
+</section>
+
+<!-- ============ 18 ============ -->
+<section class="slide light" data-animate="content">
+  <div class="chrome"><div>主题二 &middot; 方向一 &middot; 外部检索事实</div></div>
+  <div class="frame" style="padding-top:4vh; overflow-y:auto">
+    <div class="kicker" data-anim>Direction 一 &middot; 外部检索事实</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">垂直数据壁垒 &middot; 调研发现</h2>
+    <div class="body-serif" style="line-height:1.72; opacity:.9"><p data-anim>我们在讨论里反复确认一个判断——<strong>垂直行业的深度数据才是 AI 真正的壁垒，算法本身反倒容易同质化</strong>。市场正在用真金白银验证这件事：</p>
+<p style="margin-top:2vh" data-anim><strong>云蝶科技</strong>的行知大模型副总裁直言，公司最值钱的资产是在多个行业里积累的真实数据；其医疗「医学助手」接入十余家三甲医院，把文献研读效率提升了 <strong>90%</strong>，2024 年营收已超 <strong>4 亿元</strong>并实现盈利。<strong>中康科技</strong>的「卓睦鸟」医疗大模型同样如此——它基于百亿级医学文献、病历与药学知识图谱训练，覆盖 <strong>3000 多家医药企业、18105 家二级以上医疗机构</strong>。</p><p style="margin-top:2vh" data-anim>顺着这条线往下看，<strong>百望股份</strong>和<strong>蜜度</strong>把「数据护城河」做到了极致：百望坐拥 <strong>2850 万企业节点、231 亿张发票</strong>的动态数据池，被称为难以逾越的壁垒；蜜度则凭借日均新增 <strong>20 亿条、10PB 级</strong>的多模态数据库服务 <strong>1.2 万家企业客户</strong>。</p><p style="margin-top:2vh" data-anim>这种「通用模型＋垂直模型」的协同范式，已经得到官方层面的认可。工信部 2025 年 5 月的数据显示，我国已在钢铁、煤炭等行业建成高质量行业数据集，金融、医疗、法律、工业领域的精调模型精度更高、部署也更轻便。<strong>垂直数据壁垒不是某家公司的口号，而是产业与政策共同的走向。</strong></div>
+  </div>
+  <div class="foot"><div>主题二 &middot; 方向一 &middot; 外部事实</div></div>
+</section>
+
+<!-- ============ 19 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题二 &middot; 方向一 &middot; 对我们意味着什么</div></div>
+  <div class="frame content-center" style="display:grid; gap:3vh; align-content:center; min-height:80vh; max-width:76vw">
+    <div class="kicker" data-anim>Direction 一 &middot; 对我们意味着什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:1.5vh">垂直数据壁垒 &middot; 判断与行动</h2>
+    <div class="callout" data-anim style="border-left-width:4px; padding:3vh 2.6vw">
+      <div class="body-serif" style="line-height:1.68; font-size:max(15px,1.28vw)">核心判断「<strong>垂直数据=壁垒</strong>」被产业广泛验证。我方优势在<strong>粉丝行为数据＋共创内容数据</strong>——这是平台独占、外部无法获取的「数据护城河」，恰对应会议讨论中我们明确的「我们能否复刻取决于数据」。可从「<strong>IP 数据资产地图</strong>」起步，先盘点再谈模型。</div>
+    </div>
+  </div>
+  <div class="foot"><div>主题二 &middot; 方向一 &middot; 意味着什么</div></div>
+</section>
+
+<!-- ============ 20 ============ -->
+<section class="slide hero dark">
+  <div class="chrome"><div>主题二 &middot; 方向二 &middot; 粉丝共创经济</div></div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>方向二 &middot; 粉丝共创经济</div>
+    <h1 style="font-family:var(--serif-zh); font-weight:900; font-size:6.5vw; line-height:1.06" data-anim>粉丝共创经济模式</h1>
+    <p class="lead" style="max-width:60vw" data-anim>从「IP方单向输出」翻转为「粉丝共创、共享价值」——国际有验证，国内有雏形。</p>
+  </div>
+  <div class="foot"><div>主题二 &middot; 方向二</div></div>
+</section>
+
+<!-- ============ 21 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题二 &middot; 方向二 &middot; 我们聊过什么</div></div>
+  <div class="frame content-center" style="padding-top:5vh">
+    <div class="kicker" data-anim>Direction 二 &middot; 我们聊过什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:3vh">粉丝共创经济 &middot; 会议讨论</h2>
+    <div class="callout" data-anim><div class="q-big">生产关系重构——IP 方单向→粉丝共创/共享价值/集体拥有；关键创新「角色倒转」以粉丝为创作核心。</div></div>
+  </div>
+  <div class="foot"><div>主题二 &middot; 方向二 &middot; 我们聊过什么</div></div>
+</section>
+
+<!-- ============ 22 ============ -->
+<section class="slide light" data-animate="content">
+  <div class="chrome"><div>主题二 &middot; 方向二 &middot; 外部检索事实</div></div>
+  <div class="frame" style="padding-top:4vh; overflow-y:auto">
+    <div class="kicker" data-anim>Direction 二 &middot; 外部检索事实</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">粉丝共创经济 &middot; 调研发现</h2>
+    <div class="body-serif" style="line-height:1.72; opacity:.9"><p data-anim>我们设想的终局，是把生产关系从「IP 方单向输出」翻转为「<strong>粉丝共创、共享价值、集体拥有</strong>」，核心是让粉丝从消费者变成创作主体。这件事在国内外都已经有跑通的样本：</p>
+<p style="margin-top:2vh" data-anim>国际上，<strong>国际米兰 2025-06 推出 INTERISTA 行为忠诚计划</strong>，完全免费、设 <strong>11 级阶梯</strong>和「PUNTI 升级 / MONETE 兑换」双货币，用游戏化和日常行为奖励粉丝，teasing 阶段就超 <strong>25 万注册</strong>，2026 米兰德比票房冲到 <strong>870 万欧元</strong>创意甲纪录。IPL 的 <strong>Gujarat Titans</strong> 则靠 AI 个性化＋游戏化的 Titans Fam App 驱动忠诚，单赛季 App 屏幕浏览 <strong>+93.89%</strong>、日均活跃用户（DAU）<strong>+62.45%</strong>。</p><p style="margin-top:2vh" data-anim>国内也冒出了「角色倒转」的雏形——周深<strong>「周可可/周嫑嫑」</strong>、五月天<strong>「卜卜」</strong>都是明星与粉丝共创托举出的独立潮玩 IP，年销破亿；蜜雪冰城联手可灵/海螺 AI 的<strong>「雪王 IP 共创计划」</strong> 7 天收获 <strong>12 万条 UGC 二创</strong>、微博阅读 <strong>3.8 亿</strong>，叶罗丽十年同人生态（LOFTER <strong>10 万+ 作品</strong>）则是官方主动降门槛的范本。</p><p style="margin-top:2vh" data-anim>不过这些还都停留在「共创」动作本身，<strong>尚未长出「IP 方＋平台＋粉丝三方分润」的成熟产品</strong>——这正是制度创新留出的窗口。</div>
+  </div>
+  <div class="foot"><div>主题二 &middot; 方向二 &middot; 外部事实</div></div>
+</section>
+
+<!-- ============ 23 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题二 &middot; 方向二 &middot; 对我们意味着什么</div></div>
+  <div class="frame content-center" style="display:grid; gap:3vh; align-content:center; min-height:80vh; max-width:76vw">
+    <div class="kicker" data-anim>Direction 二 &middot; 对我们意味着什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:1.5vh">粉丝共创经济 &middot; 判断与行动</h2>
+    <div class="callout" data-anim style="border-left-width:4px; padding:3vh 2.6vw">
+      <div class="body-serif" style="line-height:1.68; font-size:max(15px,1.28vw)">B 先验（「国际有 Gujarat Titans/Inter 案例，国内合规空白=机会」）获 2025–2026 新数据强化，且国内已出现「角色倒转」雏形（周可可/卜卜、雪王 AI 共创）。但<strong>国内尚无「IP 方＋平台＋粉丝三方共创分润」的合规成熟产品</strong>——这正是会议主张「以粉丝为创作核心」的制度创新窗口，可借鉴 <strong>INTERISTA 的「积分/徽章/双货币＋等级」</strong> 而非代币。</div>
+    </div>
+  </div>
+  <div class="foot"><div>主题二 &middot; 方向二 &middot; 意味着什么</div></div>
+</section>
+
+<!-- ============ 24 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题二 &middot; 来源速读</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Sources &middot; 📖 来源速读</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">垂直数据与数字分身 &middot; 关键来源</h2>
+    <div style="display:flex; flex-direction:column">
+      <div class="rowline" data-anim>
+        <div class="k">云蝶科技·羊城晚报</div>
+        <div class="v">副总裁称最值钱资产是行业真实数据，医疗「医学助手」提效90%，2024营收超4亿且盈利</div>
+        <div class="m">权威媒体</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">百望股份</div>
+        <div class="v">坐拥2850万企业节点、231亿张发票数据池，被称为难逾越的数据护城河</div>
+        <div class="m">媒体报道</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">Inter·INTERISTA</div>
+        <div class="v">2025-06推出行为忠诚计划，11级、双货币，25万+注册</div>
+        <div class="m">产品/官方</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">Gujarat Titans MoEngage</div>
+        <div class="v">MoEngage 案例：用 AI 个性化把 DAU +62.45%、屏幕浏览 +93%</div>
+        <div class="m">产品/案例</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">中评协国标</div>
+        <div class="v">GB/T 46353-2025《数据资产价值评估》国标发布，创新两段式评估并强制区块链存证</div>
+        <div class="m">官方/协会</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">央视·数字人市场</div>
+        <div class="v">2025 数字人核心市场将破480亿、带动6400亿，年内投融资23起35亿</div>
+        <div class="m">权威媒体</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>主题二 &middot; 来源速读</div></div>
+</section>
+
+<!-- ============ 25 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题三 &middot; 粉丝精神需求</div></div>
+  <div class="frame" style="display:grid; gap:6vh; align-content:center; min-height:80vh">
+    <h1 class="h-hero" style="font-size:8.5vw" data-anim>粉丝精神需求</h1>
+    <p class="lead" style="max-width:55vw" data-anim>萨提亚 / SDT 双理论支撑；AI 作为精神能量角色</p>
+  </div>
+  <div class="foot"><div>主题三 &middot; 粉丝精神需求</div></div>
+</section>
+
+<!-- ============ 26 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>主题三 &middot; 核心结论</div></div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>五条核心结论 &middot; 直接引自调研文档</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.2vh">粉丝精神需求的五个判断</h2>
+    <div style="display:flex; flex-direction:column">
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">① 萨提亚「冰山渴望」与我们归纳的两大刚需同构</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">「渴望（Yearnings）」——被爱、被接纳、被认可、归属感、自由、意义感，与「自我价值被认可／自我存在被接纳」两大底层刚需高度吻合，可作为社区设计的「底层需求语言」。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">② SDT 三需求是心理学硬支撑</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">自我决定理论（自主／胜任／关联）引入人机交互研究；控制感 β=0.44 与心流 β=0.18 是留存最强中介——主导 AI 产品留存的不是「有用性」，而是自主感与沉浸体验。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">③ AI 确能缓解孤独、满足关联需求，但有边界</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">哈佛 HBS（De Freitas 2025）、孟菲斯大学（Wu 2025）均证实拟人化 AI 可显著降低孤独感；但过度依赖会陷入「虚假亲密」，真实关系不可替代。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">④ 个性化激励有可量化商业回报</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">Gujarat Titans 用 AI 个性化＋游戏化把 DAU 提升 62%、浏览 +93%，获 2025 CX Excellence Award——「先解决精神需求 → 再导引变现」已被验证。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">⑤ 「助人即助己」：让粉丝参与共创 AI 本身就是精神收益</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">CHI'25 最佳论文证明帮助 AI（纠错、训练）的亲社会行为也能提升人类福祉，机制是满足 SDT 三需求——为「角色倒转」提供实证锚点。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>主题三 &middot; 结论</div></div>
+</section>
+
+<!-- ============ 27 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题三 &middot; 方向一 &middot; SDT 自我决定理论</div></div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>方向一 &middot; SDT 自我决定理论</div>
+    <h1 style="font-family:var(--serif-zh); font-weight:900; font-size:6.5vw; line-height:1.06" data-anim>自我决定理论（SDT）· 控制感 β=0.44 是留存密码</h1>
+    <p class="lead" style="max-width:60vw" data-anim>Zhou &amp; Ma（2025）实测：控制感和心流是 AI 产品留存的最强中介，而「有用性」居然没有显著效应。</p>
+  </div>
+  <div class="foot"><div>主题三 &middot; 方向一</div></div>
+</section>
+
+<!-- ============ 28 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题三 &middot; 方向一 &middot; 我们聊过什么</div></div>
+  <div class="frame content-center" style="padding-top:5vh">
+    <div class="kicker" data-anim>Direction 一 &middot; 我们聊过什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:3vh">SDT 自我决定理论 &middot; 会议讨论</h2>
+    <div class="callout" data-anim><div class="q-big">SDT 与我们归纳的两大刚需高度同构——「自我价值被认可」≈胜任感/价值感，「自我存在被接纳」≈关联/归属；而「被允许不改变」≈自主性。三者共同支撑 AI 作为「精神能量角色」的动机底座。</div></div>
+  </div>
+  <div class="foot"><div>主题三 &middot; 方向一 &middot; 我们聊过什么</div></div>
+</section>
+
+<!-- ============ 29 ============ -->
+<section class="slide light" data-animate="content">
+  <div class="chrome"><div>主题三 &middot; 方向一 &middot; 外部检索事实</div></div>
+  <div class="frame" style="padding-top:4vh; overflow-y:auto">
+    <div class="kicker" data-anim>Direction 一 &middot; 外部检索事实</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">SDT 自我决定理论 &middot; 调研发现</h2>
+    <div class="body-serif" style="line-height:1.72; opacity:.9"><p data-anim>自我决定理论（SDT）把人的内在动机拆成三根支柱：<strong>自主性（autonomy）</strong>、<strong>胜任感（competence）</strong>、<strong>关联性（relatedness）</strong>。当这三者同时被满足，人才会从「被推着走」变成「自己想走」，产生内在动机、自我激励与成长——这正好对应我们聊到的两大刚需里的「被认可」与「被接纳」，以及「被允许不改变」背后的那份自主。</p>
+<p style="margin-top:2vh" data-anim>但光说「满足需求就好」太空泛，真正关键的是哪一根支柱最能拉动留存。<strong>Zhou &amp; Ma（2025，《Learning and Motivation》，N=669，PLS-SEM）</strong> 在生成式 AI 辅助学习平台上测出：<strong>控制感（β=0.440, p&lt;0.001）</strong> 和 <strong>心流体验（β=0.180, p&lt;0.001）</strong> 是用户粘性的最强中介，而「感知有用性（PU）」对留存居然没有显著效应。</p><p style="margin-top:2vh" data-anim><strong>换句话说，主导 AI 产品留存的不是「有用」，而是用户觉得自己说了算、并且沉浸其中。</strong></p><p style="margin-top:2vh" data-anim>不过事情没这么简单——三根支柱的重要性会随场景漂移。<strong>2025 年 Nature 子刊</strong>对「学生学 AI 的动机」做了 SDT 网络分析（<strong>N=1465</strong>，覆盖 47 所大学），发现在 AI 富集的学习环境里，<strong>胜任感满足比自主与关联更重要</strong>。这意味着产品不能一套参数用到死，得看用户此刻在什么场景、最缺哪一口「心理营养」。</div>
+  </div>
+  <div class="foot"><div>主题三 &middot; 方向一 &middot; 外部事实</div></div>
+</section>
+
+<!-- ============ 30 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题三 &middot; 方向一 &middot; 对我们意味着什么</div></div>
+  <div class="frame content-center" style="display:grid; gap:3vh; align-content:center; min-height:80vh; max-width:76vw">
+    <div class="kicker" data-anim>Direction 一 &middot; 对我们意味着什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:1.5vh">SDT 自我决定理论 &middot; 判断与行动</h2>
+    <div class="callout" data-anim style="border-left-width:4px; padding:3vh 2.6vw">
+      <div class="body-serif" style="line-height:1.68; font-size:max(15px,1.28vw)"><strong>控制感（自主）＋ 心流（沉浸）是 AI 产品留存的「杠杆点」</strong>，而非功能堆叠。对应到「精神能量角色」：场景设计师要给「有意义的选择」（自主），个性化激励引擎要给「恰到好处的挑战与即时正反馈」（心流与胜任），正反馈设计师要强化「被看见」（关联）。设计原则应为「<strong>赋能而非操控</strong>」。</div>
+    </div>
+  </div>
+  <div class="foot"><div>主题三 &middot; 方向一 &middot; 意味着什么</div></div>
+</section>
+
+<!-- ============ 31 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题三 &middot; 方向二 &middot; 个性化激励系统</div></div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>方向二 &middot; 个性化激励系统</div>
+    <h1 style="font-family:var(--serif-zh); font-weight:900; font-size:6.5vw; line-height:1.06" data-anim>个性化激励系统设计</h1>
+    <p class="lead" style="max-width:60vw" data-anim>Gujarat Titans 把「被记住、被偏爱、被庆祝」做成可量化激励引擎——DAU +62.45%。</p>
+  </div>
+  <div class="foot"><div>主题三 &middot; 方向二</div></div>
+</section>
+
+<!-- ============ 32 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题三 &middot; 方向二 &middot; 我们聊过什么</div></div>
+  <div class="frame content-center" style="padding-top:5vh">
+    <div class="kicker" data-anim>Direction 二 &middot; 我们聊过什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:3vh">个性化激励系统 &middot; 会议讨论</h2>
+    <div class="callout" data-anim><div class="q-big">会议讨论中提出的「个性化激励引擎」是四大精神能量角色之一；商业逻辑是「先解决精神需求 → 再导引到变现」，而非为变现而变现。</div></div>
+  </div>
+  <div class="foot"><div>主题三 &middot; 方向二 &middot; 我们聊过什么</div></div>
+</section>
+
+<!-- ============ 33 ============ -->
+<section class="slide light" data-animate="content">
+  <div class="chrome"><div>主题三 &middot; 方向二 &middot; 外部检索事实</div></div>
+  <div class="frame" style="padding-top:4vh; overflow-y:auto">
+    <div class="kicker" data-anim>Direction 二 &middot; 外部检索事实</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">个性化激励系统 &middot; 调研发现</h2>
+    <div class="body-serif" style="line-height:1.72; opacity:.9"><p data-anim>「先解决精神需求，再导引变现」不是口号，<strong>已经有球队把它跑成了可量化的数字</strong>。</p>
+<p style="margin-top:2vh" data-anim><strong>Gujarat Titans</strong>（IPL 板球队）在 2024–25 赛季联合 MoEngage 做 AI 个性化，结果 DAU <strong>+62.45%</strong>、App 屏幕浏览 <strong>+93.89%</strong>、注册 <strong>+36.72%</strong>，拿下 <strong>2025 CX Excellence Awards &quot;Best Use of Personalization（Sports）&quot;</strong>。它的打法本质是把<strong>「被记住、被偏爱」</strong>做成产品动作：实时打通「最爱球员（Favourite Titan）」跨渠道同步、用游戏化建档（Uttarayan &quot;Tap-a-Kite&quot; 做到 <strong>46.5% 参与率</strong>）、最关键是用「最爱球员」个性化祝福换取生日信息，<strong>63% 转化</strong>，再自动生成 AI 生日视频。</p><p style="margin-top:2vh" data-anim>光看案例还不够，它背后站着一套可复用的设计语言。从 SDT 的 UX 视角看：<br/>- 自主性靠「可定制设置＋多选路径＋选择加入而非强制」<br/>- 胜任感靠「进度条＋微成就＋脚手架」<br/>- 关联感靠「社交功能＋拟人化微文案＋个性化反馈（也就是记得你）」</p><p style="margin-top:2vh" data-anim><strong>Gujarat Titans 的每一招，都能在这三根支柱上找到落点</strong>——它验证的不是某家公司的奇招，而是「精神需求驱动留存」这件事本身可被工程化。</div>
+  </div>
+  <div class="foot"><div>主题三 &middot; 方向二 &middot; 外部事实</div></div>
+</section>
+
+<!-- ============ 34 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题三 &middot; 方向二 &middot; 对我们意味着什么</div></div>
+  <div class="frame content-center" style="display:grid; gap:3vh; align-content:center; min-height:80vh; max-width:76vw">
+    <div class="kicker" data-anim>Direction 二 &middot; 对我们意味着什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:1.5vh">个性化激励系统 &middot; 判断与行动</h2>
+    <div class="callout" data-anim style="border-left-width:4px; padding:3vh 2.6vw">
+      <div class="body-serif" style="line-height:1.68; font-size:max(15px,1.28vw)">Gujarat Titans 把「精神动作」（被记住、被偏爱、被庆祝）做成<strong>可量化激励引擎</strong>，正是我们设想的「个性化激励引擎」的现成范本。落地要点：用<strong>「偏爱数据换情感惊喜」</strong>（生日 AI 视频）做低摩擦建档，用<strong>游戏化</strong>做持续正反馈，且全程尊重 <strong>「opt-in / 可调边界」</strong>（呼应萨提亚「被允许不改变」）。</div>
+    </div>
+  </div>
+  <div class="foot"><div>主题三 &middot; 方向二 &middot; 意味着什么</div></div>
+</section>
+
+<!-- ============ 35 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题三 &middot; 来源速读</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Sources &middot; 📖 来源速读</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">粉丝精神需求 &middot; 关键来源</h2>
+    <div style="display:flex; flex-direction:column">
+      <div class="rowline" data-anim>
+        <div class="k">SDT UX 视角</div>
+        <div class="v">从 UX 视角拆解 SDT 三需求如何转化为自主/胜任/关联的产品设计语言</div>
+        <div class="m">博客</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">Zhou&amp;Ma SDT 论文</div>
+        <div class="v">Zhou &amp; Ma (2025) 实证：控制感与心流是 AI 学习平台用户粘性的最强中介，有用性不显著</div>
+        <div class="m">论文</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">Nature 子刊 SDT</div>
+        <div class="v">Nature 子刊 SDT 网络分析(N=1465)：AI 学习环境里胜任感比自主与关联更重要</div>
+        <div class="m">论文</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">HBS AI 陪伴降孤独</div>
+        <div class="v">哈佛商学院(2025)：AI 伴侣缓解孤独与真人相当，关键是「被听见」</div>
+        <div class="m">论文/报告</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">Gujarat Titans 案例</div>
+        <div class="v">MoEngage 案例：Gujarat Titans 用 AI 个性化把 DAU +62.45%、浏览+93%</div>
+        <div class="m">产品/案例</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">萨提亚冰山科普</div>
+        <div class="v">科普萨提亚「冰山隐喻」最底层的「渴望」是全人类共通的心理营养需求</div>
+        <div class="m">百科/科普</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>主题三 &middot; 来源速读</div></div>
+</section>
+
+<!-- ============ 36 ============ -->
+<section class="slide hero dark">
+  <div class="chrome"><div>主题四 &middot; 舆情风险管理</div></div>
+  <div class="frame" style="display:grid; gap:6vh; align-content:center; min-height:80vh">
+    <h1 class="h-hero" style="font-size:8.5vw" data-anim>舆情风险管理</h1>
+    <p class="lead" style="max-width:55vw" data-anim>共创受控不失控；风控变产品护盾</p>
+  </div>
+  <div class="foot"><div>主题四 &middot; 舆情风险管理</div></div>
+</section>
+
+<!-- ============ 37 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>主题四 &middot; 核心结论</div></div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>五条核心结论 &middot; 直接引自调研文档</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.2vh">舆情风险管理的五个判断</h2>
+    <div style="display:flex; flex-direction:column">
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">① AI 内容安全能力已达「可用但非万能」区间</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">MLLM 品牌 F1 0.86–0.91，人类 0.98，但人类成本约为最高效 AI 的 40 倍。应定位「AI 初筛＋人工守复杂边界的混合体系」。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">② 监管已把「显式+隐式双标识」变成硬约束</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">《人工智能生成合成内容标识办法》2025-09-01 施行——共创产物必须可标识、可追溯，否则触红线。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">③ 「马甲/外网引导」是高敏感雷区</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">「利用 AI 养号、群控机器人、批量控评」被列为网络水军重点打击对象。任何不显式标识且用于操控舆论的马甲即踩法律红线。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">④ 平台差异主要在「IP 专属风控」而非通用审核</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">各平台均已双标识，但对「假冒特定人物/IP」处罚力度差异极大（如 B站 AI 假冒直接 A 类处罚）。风控必须对齐平台 IP 专属规则。</p>
+      </div>
+      <div style="padding:1.3vh 0; border-top:1px solid rgba(127,127,127,.25)" data-anim>
+        <div class="h-md" style="margin-bottom:.5vh">⑤ 「共创受控不失控」有技术与制度双重支撑</div>
+        <p class="body-zh" style="font-size:max(13px,1.02vw)">分层（L1 预警→L5 复盘）＋ 边界（允许/禁止/灰色）＋ 双标识，对应外部成熟实践，证明「边界内受控共创」可落地。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>主题四 &middot; 结论</div></div>
+</section>
+
+<!-- ============ 38 ============ -->
+<section class="slide hero dark">
+  <div class="chrome"><div>主题四 &middot; 方向一 &middot; AI 舆情监测</div></div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>方向一 &middot; AI 舆情监测</div>
+    <h1 style="font-family:var(--serif-zh); font-weight:900; font-size:6.5vw; line-height:1.06" data-anim>AI 舆情监测技术</h1>
+    <p class="lead" style="max-width:60vw" data-anim>Zefr 联合评测：紧凑型 MLLM 精度已达 F1 0.91，人类仍胜过 AI 但贵了约 40 倍。</p>
+  </div>
+  <div class="foot"><div>主题四 &middot; 方向一</div></div>
+</section>
+
+<!-- ============ 39 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题四 &middot; 方向一 &middot; 我们聊过什么</div></div>
+  <div class="frame content-center" style="padding-top:5vh">
+    <div class="kicker" data-anim>Direction 一 &middot; 我们聊过什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:3vh">AI 舆情监测 &middot; 会议讨论</h2>
+    <div class="callout" data-anim><div class="q-big">会议中 IP 方最担心舆情/负面内容，「AI 救火队员」方案第一步就是「情报收集＋预警提醒」——要在负面出现的第一时间发现。本方向要回答：现有 AI 监测工具到底靠不靠谱、误报率高不高。</div></div>
+  </div>
+  <div class="foot"><div>主题四 &middot; 方向一 &middot; 我们聊过什么</div></div>
+</section>
+
+<!-- ============ 40 ============ -->
+<section class="slide light" data-animate="content">
+  <div class="chrome"><div>主题四 &middot; 方向一 &middot; 外部检索事实</div></div>
+  <div class="frame" style="padding-top:4vh; overflow-y:auto">
+    <div class="kicker" data-anim>Direction 一 &middot; 外部检索事实</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">AI 舆情监测 &middot; 调研发现</h2>
+    <div class="body-serif" style="line-height:1.72; opacity:.9"><p data-anim>我们想搞清楚 AI 监测工具到底靠不靠谱、误报率高不高。行业里真正拿数据说话的，是 <strong>Zefr 联合发表的一篇评测论文</strong>（arXiv 2508.5527v1，被 ICCV 2025 CVAM 工作坊接收），它用 <strong>1500 条多模态视频</strong>同时测了 6 个跨模态大模型。</p>
+<p style="margin-top:2vh" data-anim>结果很直观：<strong>Gemini-2.0-Flash / Gemini-2.0-Flash-Lite 的 F1 达到 0.91</strong>，Gemini-1.5-Flash 为 0.90，GPT-4o 为 0.87，Llama-3.2-11B-Vision 为 0.86，而<strong>人类专家是 0.98</strong>。论文的核心结论其实挺鼓舞人——<strong>「紧凑型 MLLM 在不涨价的前提下，精度不输大模型」</strong>。</p><p style="margin-top:2vh" data-anim>不过事情没这么简单——同一篇论文把 MLLM 的翻车点也摆出来了，主要有三类：<br/>- <strong>「错误关联」</strong>：比如一条讲日语「咖啡因成瘾」的视频被整批误判成毒品类<br/>- <strong>语境理解不足</strong><br/>- <strong>非英语内容性能明显下滑</strong></p><p style="margin-top:2vh" data-anim>换句话说，模型在「看起来没问题」的主流英文测试集上表现不错，但<strong>一碰到跨文化、非母语、谐音梗，就露怯了</strong>。</p><p style="margin-top:2vh" data-anim>顺着这条线，<strong>The Register 在 2025-08-08</strong> 的报道把成本账也算清楚了：<strong>人类审核确实仍胜过 AI，但贵了约 40 倍</strong>。报道还点出一个关键区别——<strong>品牌安全（brand safety）和社媒内容审核不是一回事</strong>，前者要按广告主偏好对齐、更看重细粒度分类。这恰恰说明，AI 监测能扛「海量初筛」的活，但会不会误伤，最终还要看具体场景的细颗粒度。</div>
+  </div>
+  <div class="foot"><div>主题四 &middot; 方向一 &middot; 外部事实</div></div>
+</section>
+
+<!-- ============ 41 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题四 &middot; 方向一 &middot; 对我们意味着什么</div></div>
+  <div class="frame content-center" style="display:grid; gap:3vh; align-content:center; min-height:80vh; max-width:76vw">
+    <div class="kicker" data-anim>Direction 一 &middot; 对我们意味着什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:1.5vh">AI 舆情监测 &middot; 判断与行动</h2>
+    <div class="callout" data-anim style="border-left-width:4px; padding:3vh 2.6vw">
+      <div class="body-serif" style="line-height:1.68; font-size:max(15px,1.28vw)">监测层的「预警提醒」完全可交给 <strong>MLLM 做 7×24 初筛</strong>（成本极低），但<strong>非中文语境、谐音梗、IP 二创的隐喻</strong>恰恰是模型最弱处——这正对应 IP 方「爱惜羽毛、怕误伤」的担忧。因此预警<strong>必须保留人工复核闸门</strong>，并针对中文/粉丝圈黑话做微调，才能让 IP 方相信「共创受控不失控」。</div>
+    </div>
+  </div>
+  <div class="foot"><div>主题四 &middot; 方向一 &middot; 意味着什么</div></div>
+</section>
+
+<!-- ============ 42 ============ -->
+<section class="slide hero dark">
+  <div class="chrome"><div>主题四 &middot; 方向二 &middot; 社区治理模式</div></div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>方向二 &middot; 社区治理模式</div>
+    <h1 style="font-family:var(--serif-zh); font-weight:900; font-size:6.5vw; line-height:1.06" data-anim>粉丝社区治理模式</h1>
+    <p class="lead" style="max-width:60vw" data-anim>抖音已形成「显式＋全量隐式」的双标识闭环——映射我们的 L1–L5 分层治理思路。</p>
+  </div>
+  <div class="foot"><div>主题四 &middot; 方向二</div></div>
+</section>
+
+<!-- ============ 43 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题四 &middot; 方向二 &middot; 我们聊过什么</div></div>
+  <div class="frame content-center" style="padding-top:5vh">
+    <div class="kicker" data-anim>Direction 二 &middot; 我们聊过什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:3vh">社区治理模式 &middot; 会议讨论</h2>
+    <div class="callout" data-anim><div class="q-big">会议锚点是「共创不可控」与「边界内受控」。本方向看成熟 UGC/粉丝社区怎么管内容，能否映射我们的 L1–L5 分层。</div></div>
+  </div>
+  <div class="foot"><div>主题四 &middot; 方向二 &middot; 我们聊过什么</div></div>
+</section>
+
+<!-- ============ 44 ============ -->
+<section class="slide light" data-animate="content">
+  <div class="chrome"><div>主题四 &middot; 方向二 &middot; 外部检索事实</div></div>
+  <div class="frame" style="padding-top:4vh; overflow-y:auto">
+    <div class="kicker" data-anim>Direction 二 &middot; 外部检索事实</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">社区治理模式 &middot; 调研发现</h2>
+    <div class="body-serif" style="line-height:1.72; opacity:.9"><p data-anim>成熟社区是怎么把「共创」管住的，先看头号样本<strong>抖音</strong>。</p>
+<p style="margin-top:2vh" data-anim>据人民网（2025-10-24）和新华网（2025-09-02）报道，抖音已上线两项核心能力：一是 <strong>AI 内容标识功能</strong>，让创作者主动加显式提示；二是 <strong>AI 内容元数据标识的读写功能</strong>，能识别并写入元数据来支撑溯源。更关键的是，它对站内所有 AI 内容同步补充、更新隐式标识，由此形成<strong>「显式 ＋ 全量隐式」的双标识闭环</strong>。</p><p style="margin-top:2vh" data-anim>抖音不是孤例，各平台走的其实是同一条路但各有侧重：<strong>B站</strong>是「UP 主主动声明＋平台补充标注」，<strong>快手</strong>是「显式标签＋隐式数字指纹」并行，<strong>今日头条、小红书、哔哩哔哩、喜马拉雅</strong>也都公告落实双标识与标识检测。也就是说，<strong>「标识前置＋可溯源」已经从单家尝试变成了行业通用语法</strong>。</p><p style="margin-top:2vh" data-anim>光靠平台自觉还不够，监管在背后推了一把。网信办<strong>「清朗·整治 AI 技术滥用」专项行动</strong>（2025-04 起，为期 3 个月）里，上海就指导 <strong>15 家平台拦截清理违规信息 82 万余条、处置账号 1400 余个、下线违规智能体 2700 余个</strong>，共性问题集中在虚假宣传、低俗擦边、违规营销。</p><p style="margin-top:2vh" data-anim>这套「分层＋标识＋溯源」的组合拳，正好能对应我们设想的 <strong>L1–L5 分层治理思路</strong>——成熟社区已经把它跑通了。</div>
+  </div>
+  <div class="foot"><div>主题四 &middot; 方向二 &middot; 外部事实</div></div>
+</section>
+
+<!-- ============ 45 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>主题四 &middot; 方向二 &middot; 对我们意味着什么</div></div>
+  <div class="frame content-center" style="display:grid; gap:3vh; align-content:center; min-height:80vh; max-width:76vw">
+    <div class="kicker" data-anim>Direction 二 &middot; 对我们意味着什么</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:1.5vh">社区治理模式 &middot; 判断与行动</h2>
+    <div class="callout" data-anim style="border-left-width:4px; padding:3vh 2.6vw">
+      <div class="body-serif" style="line-height:1.68; font-size:max(15px,1.28vw)">抖音<strong>「双标识＋全量隐式标识」</strong>可自然映射我们的 L1–L5 分层治理思路——显式标识对应 L1/L2（用户与平台可见的预警与缓冲），隐式元数据对应 L3/L4（溯源与清理追踪），平台级治理周报对应 L5（复盘）。成熟社区的经验证明：<strong>分层、可溯源、标识前置</strong>是 UGC 受控的通用解法，支撑我们把「共创边界」产品化为<strong>一套社区治理 SOP</strong>。</div>
+    </div>
+  </div>
+  <div class="foot"><div>主题四 &middot; 方向二 &middot; 意味着什么</div></div>
+</section>
+
+<!-- ============ 46 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>主题四 &middot; 来源速读</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Sources &middot; 📖 来源速读</div>
+    <h2 class="h-xl" data-anim style="margin-bottom:2.5vh">舆情风险管理 &middot; 关键来源</h2>
+    <div style="display:flex; flex-direction:column">
+      <div class="rowline" data-anim>
+        <div class="k">Zefr 评测论文</div>
+        <div class="v">Zefr 等 用 1500 条多模态视频测了 6 个 MLLM 的审核精度与成本，结论是小模型不涨价也能打</div>
+        <div class="m">论文</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">The Register 报道</div>
+        <div class="v">科技媒体：人类仍胜过 AI 但贵 40 倍，区分品牌安全与社媒审核</div>
+        <div class="m">权威媒体</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">人民网·标识办法落地</div>
+        <div class="v">人民网报道《标识办法》落地，未标识 AI 视频当「数字孙子」哄骗老人</div>
+        <div class="m">权威媒体</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">新华网·抖音双标识</div>
+        <div class="v">新华网报道抖音上线 AI 内容显式 + 隐式双标识能力</div>
+        <div class="m">权威媒体</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">清朗行动</div>
+        <div class="v">律师解读网信办「清朗」行动：AI 水军、未标识为重点打击对象</div>
+        <div class="m">报道/转载</div>
+      </div>
+      <div class="rowline" data-anim>
+        <div class="k">Spencer Fane bot 风险</div>
+        <div class="v">美国律所文章：上线 AI chatbot 的法律风险与「显式免责声明」safeguards</div>
+        <div class="m">博客/法律分析</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>主题四 &middot; 来源速读</div></div>
+</section>
+
+<!-- ============ 47 ============ -->
+<section class="slide hero dark">
+  <div class="chrome"><div>收尾</div></div>
+  <div class="frame center" style="min-height:80vh">
+    <div class="ghost accent" data-anim>48</div>
+    <div class="kicker accent" data-anim>Closing &middot; 金句</div>
+    <h1 class="h-xl" data-anim style="max-width:58vw; line-height:1.2">碰撞不是终点，<br/>调研才是起点。<br/><span class="accent-text">分享让思考可见。</span></h1>
+    <div class="rule accent" style="width:6vw; margin:3vh auto" data-anim></div>
+    <p class="lead" data-anim>四个主题 &middot; 八个方向 &middot; 四十八页</p>
+  </div>
+  <div class="foot"><div>Closing</div></div>
+</section>
+
+<!-- ============ 48 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>致谢</div></div>
+  <div class="frame center" style="min-height:80vh">
+    <div class="kicker accent" data-anim>Thanks</div>
+    <h1 class="h-xl" data-anim style="margin-bottom:2vh">感谢<span class="accent-text">观看</span></h1>
+    <p class="lead" data-anim>AI 碰撞周会 &middot; 调研分享</p>
+    <div class="rule accent" style="width:8vw; margin:4vh auto" data-anim></div>
+    <p class="body-zh" style="opacity:.6" data-anim>上周碰撞 &rarr; 调研产出 &middot; 本周分享汇总</p>
+  </div>
+  <div class="foot"><div>END</div></div>
+</section>
+
+</div></div>
+
+
+</div>
+
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+/* =============== WebGL 双背景 ===============
+   深色页：Holographic Dispersion（全息色散 · 钛金暗流）—— 彩虹微扰、鼠标径向涟漪
+   浅色页：Spiral Vortex（旋转涡流 · 银色珍珠）—— domain-warp 流动、无中心
+   修改风格请参考 references/webgl-backgrounds.md
+*/
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),
+              fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+let drawDark=null, drawLight=null, glRAF=0, glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode || glRAF) return;
+  if(!drawDark) drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight) drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){
+    if(window.__lowPowerMode){glRAF=0;return;}
+    const t=(Date.now()-glT0)/1000;
+    drawDark(t);drawLight(t);
+    glRAF=requestAnimationFrame(loop);
+  }
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){
+  if(glRAF) cancelAnimationFrame(glRAF);
+  glRAF=0;
+}
+startGL();
+addEventListener('ppt-low-power-change', e=>{e.detail.on ? stopGL() : startGL();});
+// =============== 导航（翻页 / 圆点 / 键盘 / 滚轮 / 触屏） ===============
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+// 关键：矫正 deck 宽度为 total * 100vw，否则翻页会错位
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  /* 主题切换：优先读 data-theme，其次从 class（light/dark）推断 */
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  /* 动效：翻页过渡中段触发当前页的入场动画（由 motion-boot 注册） */
+  if(window.__playSlide) setTimeout(()=>window.__playSlide(idx), 500);
+  lock=true;setTimeout(()=>lock=false,850);
+}
+
+/* =============== ESC 索引视图 =============== */
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    window.__setLowPowerMode(!window.__lowPowerMode);
+    return;
+  }
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(window.__pipeAdvance && window.__pipeAdvance()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && window.__pipeAdvance && window.__pipeAdvance()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && window.__pipeAdvance && window.__pipeAdvance()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+go(0);
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+<!-- ============ Motion One 动效引擎（本地优先,CDN 兜底） ============
+     加载策略:先 ./assets/motion.min.js(本地,离线可用),失败 fallback 到 jsDelivr CDN
+     加载完成后挂 window.__playSlide / window.__pipeAdvance,
+     导航脚本会在翻页中段调用 __playSlide(idx),键盘/滚轮/触屏会在翻页前调用 __pipeAdvance()
+     双双失败时会兜底把所有 [data-anim] 设为可见,不让动效破坏阅读
+-->
+<script type="module">
+let motion;
+try {
+  motion = await import('./assets/motion.min.js');
+} catch(e1) {
+  try {
+    motion = await import('https://cdn.jsdelivr.net/npm/motion@11.11.17/+esm');
+  } catch(e2) {
+    console.warn('[motion] local + CDN both failed, disabling animations', e1, e2);
+    document.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+    document.querySelectorAll('[data-animate="pipeline"] [data-anim]').forEach(el=>el.style.opacity='1');
+  }
+}
+
+if(motion){
+  const { animate, stagger } = motion;
+  document.body.classList.add('motion-ready');
+  const EASE = [.16, 1, .3, 1]; // expo-out
+  const EASE_SOFT = [.25, 1, .5, 1]; // quart-out
+  const slides = [...document.querySelectorAll('.slide')];
+  let pipeStep = -1;
+  let lastIdx = -1;
+
+  function resetAnims(slide){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='';
+      el.style.transform='';
+    });
+    slide.removeAttribute('data-anim-active');
+  }
+
+  function revealStatic(slide){
+    resetAnims(slide);
+    document.getAnimations?.().forEach(a=>a.cancel());
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='1';
+      el.style.transform='none';
+    });
+    slide.setAttribute('data-anim-active','true');
+  }
+
+  function playSlide(i){
+    const slide = slides[i];
+    if(!slide) return;
+    lastIdx = i;
+    const recipe = slide.dataset.animate || (slide.classList.contains('hero') ? 'hero' : 'cascade');
+    if(window.__lowPowerMode){
+      revealStatic(slide);
+      return;
+    }
+
+    if(recipe === 'pipeline'){
+      pipeStep = -1;
+      slide.querySelectorAll('[data-anim]').forEach(el=>{
+        el.style.opacity='0.15';
+        el.style.transform='none';
+      });
+      slide.setAttribute('data-anim-active','true');
+      return;
+    }
+
+    resetAnims(slide);
+    const all = [...slide.querySelectorAll('[data-anim]')];
+    if(!all.length) {
+      slide.setAttribute('data-anim-active','true');
+      return;
+    }
+
+    // 标记当前页为动画激活状态（用于CSS触发装饰性动画）
+    requestAnimationFrame(()=>{
+      slide.setAttribute('data-anim-active','true');
+    });
+
+    if(recipe === 'directional'){
+      const lefts  = all.filter(el=>el.dataset.anim==='left');
+      const divs   = all.filter(el=>el.dataset.anim==='divider');
+      const rights = all.filter(el=>el.dataset.anim==='right');
+      const others = all.filter(el=>!['left','right','divider'].includes(el.dataset.anim));
+      if(others.length) animate(others, {opacity:[0,1], y:[14,0]}, {duration:.7, delay:stagger(.1, {start:.18}), easing:EASE});
+      if(lefts.length)  animate(lefts,  {opacity:[0,1], x:[-32,0]}, {duration:.9, delay:.4, easing:EASE});
+      if(divs.length)   animate(divs,   {opacity:[0,.3]},           {duration:.6, delay:1.0});
+      if(rights.length) animate(rights, {opacity:[0,1], x:[32,0]},  {duration:.9, delay:1.1, easing:EASE});
+      return;
+    }
+
+    if(recipe === 'quote'){
+      const lines = all.filter(el=>el.dataset.anim==='line');
+      const others = all.filter(el=>el.dataset.anim!=='line');
+      if(others.length) animate(others, {opacity:[0,1], y:[10,0]},    {duration:.7, delay:stagger(.12, {start:.25}), easing:EASE});
+      if(lines.length)  animate(lines,  {opacity:[.3,1], y:[12,0]},   {duration:.9, delay:stagger(.5, {start:.6}), easing:EASE_SOFT});
+      return;
+    }
+
+    if(recipe === 'hero'){
+      animate(all, {opacity:[0,1], y:[18,0]}, {duration:1.1, delay:stagger(.18, {start:.25}), easing:EASE});
+      return;
+    }
+
+    // 长文内容页：从上到下逐段缓入，节奏更舒展
+    if(recipe === 'content'){
+      animate(all, {opacity:[0,1], y:[20,0]}, {duration:.9, delay:stagger(.15, {start:.2}), easing:EASE});
+      return;
+    }
+
+    // default: cascade
+    animate(all, {opacity:[0,1], y:[18,0]}, {duration:.85, delay:stagger(.1, {start:.18}), easing:EASE});
+  }
+
+  function pipeAdvance(){
+    if(window.__lowPowerMode) return false;
+    const slide = slides[lastIdx];
+    if(!slide || slide.dataset.animate !== 'pipeline') return false;
+    const steps  = [...slide.querySelectorAll('[data-anim="step"]')];
+    const arrows = [...slide.querySelectorAll('[data-anim="arrow"]')];
+    if(pipeStep >= steps.length - 1) return false;
+    pipeStep++;
+    animate(steps[pipeStep], {opacity:[0.15,1], y:[8,0]}, {duration:.5, easing:EASE});
+    if(pipeStep > 0 && arrows[pipeStep-1]){
+      animate(arrows[pipeStep-1], {opacity:[0.15,.7]}, {duration:.3, delay:.15});
+    }
+    return true;
+  }
+
+  window.__playSlide = playSlide;
+  window.__pipeAdvance = pipeAdvance;
+
+  // 首屏:go(0) 已跑过(同步),没来得及触发动效 → 这里补一下
+  playSlide(0);
+}
+</script>
+</body>
+</html>
+

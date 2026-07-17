@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI 分享计划 · 汇报分享</title>
+<style>
+  :root{
+    --bg:#0e1020; --bg2:#161a35; --card:#1c2142; --line:#2a3160;
+    --indigo:#6c7bff; --indigo2:#9b6cff; --txt:#eef1ff; --muted:#a7adcf;
+    --accent:#5ce0c6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 70% -10%,rgba(108,123,255,.18),transparent 60%),
+               radial-gradient(900px 500px at 10% 110%,rgba(155,108,255,.14),transparent 55%),
+               var(--bg);
+    color:var(--txt); min-height:100vh; padding:48px 20px 64px;
+  }
+  .wrap{max-width:880px;margin:0 auto}
+  header{text-align:center;margin-bottom:40px}
+  .kicker{display:inline-block;font-size:13px;letter-spacing:.18em;color:var(--accent);
+    border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:18px}
+  h1{font-size:34px;font-weight:800;letter-spacing:.01em;
+    background:linear-gradient(90deg,var(--indigo),var(--indigo2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);margin-top:10px;font-size:15px}
+
+  .latest{
+    display:block;text-decoration:none;color:inherit;
+    background:linear-gradient(135deg,var(--card),#232a55);
+    border:1px solid var(--line);border-radius:20px;padding:28px 30px;margin-bottom:36px;
+    position:relative;overflow:hidden;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .latest:hover{transform:translateY(-3px);border-color:var(--indigo);
+    box-shadow:0 18px 40px -18px rgba(108,123,255,.6)}
+  .latest .tag{font-size:12px;letter-spacing:.16em;color:var(--accent);font-weight:700}
+  .latest h2{font-size:24px;margin:10px 0 6px;font-weight:800}
+  .latest .meta{color:var(--muted);font-size:14px}
+  .latest .go{position:absolute;right:26px;top:50%;transform:translateY(-50%);
+    font-size:15px;font-weight:700;color:var(--indigo);display:flex;align-items:center;gap:8px}
+  .latest .go::after{content:"▶";font-size:13px}
+
+  .sec-title{font-size:14px;letter-spacing:.16em;color:var(--muted);margin:0 4px 14px;text-transform:uppercase}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .item{display:block;text-decoration:none;color:inherit;background:var(--bg2);
+    border:1px solid var(--line);border-radius:14px;padding:18px 18px;transition:.16s}
+  .item:hover{border-color:var(--indigo);transform:translateY(-2px)}
+  .item .d{font-size:12px;color:var(--accent);font-weight:700}
+  .item .t{font-size:16px;margin-top:6px;font-weight:700}
+  .item .arrow{float:right;color:var(--muted);font-size:13px}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:48px;line-height:1.7}
+  .fallback{display:none;color:var(--muted);font-size:13px;margin-top:8px}
+  @media(max-width:560px){h1{font-size:27px}.latest .go{position:static;transform:none;margin-top:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="kicker">AI 分享计划</span>
+    <h1>汇报分享</h1>
+    <p class="sub">每周 AI 碰撞 → 调研产出 → 分享汇总 · 自动定位最新一期</p>
+  </header>
+
+  <a class="latest" id="latest" href="#" style="display:none">
+    <span class="tag">最新分享</span>
+    <h2 id="latest-title">—</h2>
+    <div class="meta" id="latest-meta">—</div>
+    <span class="go">打开最新分享</span>
+  </a>
+
+  <p class="sec-title">历史归档</p>
+  <div class="grid" id="archive"></div>
+  <p class="fallback" id="fallback">无法自动加载列表，请直接访问当期文件夹（如 <code>2026.7.11-分享/ppt/</code>）。</p>
+
+  <footer>
+    由 GitHub Pages 托管 · 每次推送新一期会自动更新「最新分享」<br/>
+    仓库根目录 <code>weeks.json</code> 维护全部期次
+  </footer>
+</div>
+
+<script>
+  // 兜底：即使 fetch 失败（如本地 file:// 打开）也能看到首期
+  var FALLBACK = [{folder:"2026.7.11-分享",date:"2026-07-11",title:"AI 战略碰撞 · 每周分享（首期）",ppt:"2026.7.11-分享/ppt/"}];
+
+  function render(list){
+    list.sort(function(a,b){ return a.date < b.date ? 1 : -1; }); // 日期倒序，最新在前
+    var latest = list[0];
+    var el = document.getElementById('latest');
+    el.href = latest.ppt;
+    document.getElementById('latest-title').textContent = latest.title;
+    document.getElementById('latest-meta').textContent = '分享日期：' + latest.date;
+    el.style.display = 'block';
+
+    var arc = document.getElementById('archive');
+    arc.innerHTML = '';
+    list.forEach(function(w, i){
+      var a = document.createElement('a');
+      a.className = 'item';
+      a.href = w.ppt;
+      a.innerHTML = '<div class="d">'+ (i===0?'★ 最新 · ':'') + w.date + '</div>'
+                  + '<div class="t">'+ w.title + '<span class="arrow">打开 ↗</span></div>';
+      arc.appendChild(a);
+    });
+  }
+
+  fetch('./weeks.json', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(render)
+    .catch(function(){
+      document.getElementById('fallback').style.display = 'block';
+      render(FALLBACK);
+    });
+</script>
+</body>
+</html>
