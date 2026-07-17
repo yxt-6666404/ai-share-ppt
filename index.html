@@ -23,6 +23,11 @@
     --accent-deep: #b89656;
     --accent-glow: rgba(201,169,110,.15);
 
+    /* 靛蓝强调色（话题分享） */
+    --indigo: #6b8cff;
+    --indigo-rgb: 107,140,255;
+    --indigo-glow: rgba(107,140,255,.12);
+
     /* 文字层级 */
     --paper: #f5f3ef;
     --paper-soft: #d4cfc5;
@@ -85,7 +90,7 @@
     left: -15%;
     width: 50vw;
     height: 50vw;
-    background: radial-gradient(circle, rgba(108,123,255,.06) 0%, transparent 55%);
+    background: radial-gradient(circle, var(--indigo-glow) 0%, transparent 55%);
     pointer-events: none;
     z-index: 0;
   }
@@ -101,7 +106,7 @@
   }
 
   .wrap{
-    max-width: 960px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: var(--space-20) var(--space-6) var(--space-16);
     position: relative;
@@ -176,7 +181,7 @@
     background: linear-gradient(145deg, var(--ink-soft) 0%, var(--ink) 100%);
     border: 1px solid var(--line);
     border-radius: 20px;
-    padding: 40px 44px;
+    padding: 44px 48px;
     margin-bottom: var(--space-16);
     position: relative;
     overflow: hidden;
@@ -200,8 +205,8 @@
     position: absolute;
     top: 0;
     right: 0;
-    width: 200px;
-    height: 200px;
+    width: 240px;
+    height: 240px;
     background: radial-gradient(circle at top right, var(--accent-glow), transparent 70%);
     pointer-events: none;
     transition: opacity .4s var(--ease-out);
@@ -244,8 +249,9 @@
     font-weight: 600;
     margin: var(--space-3) 0 var(--space-2);
     letter-spacing: -.005em;
-    line-height: 1.3;
+    line-height: 1.35;
     color: var(--paper);
+    text-wrap: balance;
   }
 
   .latest .meta{
@@ -258,7 +264,7 @@
 
   .latest .go{
     position: absolute;
-    right: 44px;
+    right: 48px;
     top: 50%;
     transform: translateY(-50%);
     font-family: var(--mono);
@@ -305,30 +311,76 @@
     background: linear-gradient(90deg, var(--line-soft), transparent);
   }
 
-  /* ========== Archive Grid ========== */
-  .grid{
+  /* ========== Archive 双列布局 ========== */
+  .archive-wrap{
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 14px;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
     animation: fadeUp .9s .4s var(--ease-out) both;
   }
+  .archive-col{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .archive-col h3{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--paper-muted);
+    font-weight: 500;
+    padding: 0 2px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .archive-col h3::before{
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .archive-col.topic h3::before{
+    background: var(--indigo);
+  }
 
+  .archive-col.topic .item::before{
+    background: linear-gradient(90deg, var(--indigo), transparent);
+  }
+  .archive-col.topic .item:hover{
+    border-color: var(--indigo);
+  }
+  .archive-col.topic .item .d{
+    color: var(--indigo);
+  }
+  .archive-col.topic .item:hover .arrow{
+    color: var(--indigo);
+  }
+
+  @media (max-width: 720px){
+    .archive-wrap{ grid-template-columns: 1fr; gap: 24px; }
+  }
+
+  /* ========== 归档卡片 ========== */
   .item{
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     text-decoration: none;
     color: inherit;
     background: var(--ink-soft);
     border: 1px solid var(--line-soft);
-    border-radius: 14px;
-    padding: 22px 22px 18px;
+    border-radius: 16px;
+    padding: 24px 24px 20px;
     transition: transform .28s var(--ease-out),
                 border-color .28s var(--ease-out),
                 background .28s var(--ease-out);
     position: relative;
     overflow: hidden;
-    min-height: 110px;
+    min-height: 140px;
+    flex: 1;
   }
   .item::before{
     content: "";
@@ -352,13 +404,14 @@
 
   .item .d{
     font-family: var(--mono);
-    font-size: 11.5px;
-    letter-spacing: .1em;
+    font-size: 11px;
+    letter-spacing: .12em;
     color: var(--accent);
     font-weight: 500;
     display: flex;
     align-items: center;
     gap: 8px;
+    order: 1;
   }
   .item .d .star{
     font-size: 10px;
@@ -366,14 +419,17 @@
 
   .item .t{
     font-family: var(--serif-zh);
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 500;
-    margin-top: 10px;
-    line-height: 1.5;
+    line-height: 1.55;
     color: var(--paper-soft);
     transition: color .28s var(--ease-out);
-    padding-right: 20px;
-    text-wrap: pretty;
+    text-wrap: balance;
+    order: 2;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    margin: 12px 0;
   }
   .item:hover .t{
     color: var(--paper);
@@ -382,9 +438,9 @@
   .item .arrow{
     align-self: flex-end;
     color: var(--paper-faint);
-    font-size: 13px;
-    margin-top: 10px;
+    font-size: 14px;
     transition: transform .28s var(--ease-out), color .28s var(--ease-out);
+    order: 3;
   }
   .item:hover .arrow{
     color: var(--accent);
@@ -441,7 +497,7 @@
 
   /* ========== Responsive ========== */
   @media (max-width: 720px){
-    .wrap{ padding: var(--space-16) var(--space-4) var(--space-12); }
+    .wrap{ padding: var(--space-16) var(--space-4) var(--space-12); max-width: 100%; }
     header{ margin-bottom: var(--space-12); }
     .latest{
       padding: 28px 24px;
@@ -453,8 +509,9 @@
       margin-top: 18px;
       justify-content: flex-start;
     }
-    .grid{ grid-template-columns: 1fr; gap: 12px; }
     h1{ font-size: 32px; }
+    .item{ min-height: auto; padding: 20px; }
+    .item .t{ font-size: 15px; }
   }
 
   /* ========== Accessibility ========== */
@@ -490,7 +547,16 @@
   </a>
 
   <p class="sec-title">历史归档 · Archive</p>
-  <div class="grid" id="archive"></div>
+  <div class="archive-wrap" id="archive-wrap">
+    <div class="archive-col research">
+      <h3>调研分享 · Research</h3>
+      <div id="archive-research"></div>
+    </div>
+    <div class="archive-col topic">
+      <h3>话题分享 · Topic</h3>
+      <div id="archive-topic"></div>
+    </div>
+  </div>
   <p class="fallback" id="fallback">无法自动加载列表，请直接访问当期文件夹（如 <code>2026.7.11-调研分享/ppt/</code>）。</p>
 
   <footer>
@@ -500,11 +566,16 @@
 </div>
 
 <script>
-  // 兜底：即使 fetch 失败（如本地 file:// 打开）也能看到首期
+  // 兜底：即使 fetch 失败（如本地 file:// 打开）也能看到全部期次
   var FALLBACK = [{
+    folder:"2026.7.11-话题分享",
+    date:"2026-07-17",
+    title:"第 1 期 AI 话题分享 · 数字分身确权 & 企微大圆",
+    ppt:"2026.7.11-话题分享/ppt/"
+  },{
     folder:"2026.7.11-调研分享",
     date:"2026-07-11",
-    title:"AI 战略碰撞 · 每周调研分享（首期）",
+    title:"第 1 期 AI 调研分享 · AI×IP 的四个关键判断",
     ppt:"2026.7.11-调研分享/ppt/"
   }];
 
@@ -521,17 +592,25 @@
     document.getElementById('latest-meta').textContent = '分享日期 · ' + formatDate(latest.date);
     el.style.display = 'block';
 
-    var arc = document.getElementById('archive');
-    arc.innerHTML = '';
-    list.forEach(function(w, i){
-      var a = document.createElement('a');
-      a.className = 'item';
-      a.href = w.ppt;
-      a.innerHTML = '<div class="d">' + (i===0 ? '<span class="star">★</span> ' : '') + formatDate(w.date) + '</div>'
-                  + '<div class="t">' + w.title + '</div>'
-                  + '<span class="arrow">↗</span>';
-      arc.appendChild(a);
-    });
+    // 按类型分类
+    var research = list.filter(function(w){ return w.folder.indexOf('调研分享') > -1; });
+    var topic = list.filter(function(w){ return w.folder.indexOf('话题分享') > -1; });
+
+    function renderItems(container, items, isTopic){
+      container.innerHTML = '';
+      items.forEach(function(w, i){
+        var a = document.createElement('a');
+        a.className = 'item';
+        a.href = w.ppt;
+        a.innerHTML = '<div class="d">' + (i===0 ? '<span class="star">★</span> ' : '') + formatDate(w.date) + '</div>'
+                    + '<div class="t">' + w.title + '</div>'
+                    + '<span class="arrow">↗</span>';
+        container.appendChild(a);
+      });
+    }
+
+    renderItems(document.getElementById('archive-research'), research, false);
+    renderItems(document.getElementById('archive-topic'), topic, true);
   }
 
   fetch('./weeks.json', {cache:'no-store'})
