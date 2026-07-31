@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill / Harness / Agent Loop / Graph 工程 · 配图图解</title>
+<style>
+  :root{ --bg:#0f1115; --card:#171a21; --ink:#e8eaed; --sub:#9aa3af; --line:#2b3038;
+         --a:#5b8def; --b:#27c2a0; --c:#e0a64b; --d:#d9698a; --e:#9b7fe0; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,sans-serif;line-height:1.6}
+  header{padding:28px 20px 10px;text-align:center}
+  header h1{margin:0 0 6px;font-size:22px}
+  header p{margin:0;color:var(--sub);font-size:14px}
+  .wrap{max-width:760px;margin:0 auto;padding:10px 16px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 22px;margin:22px 0}
+  .card h2{margin:0 0 4px;font-size:17px}
+  .card .cap{color:var(--sub);font-size:13px;margin:0 0 14px}
+  svg{width:100%;height:auto;display:block}
+  .legend{font-size:12px;color:var(--sub);margin-top:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Skill / Harness / Agent Loop / Graph 工程 · 配图图解</h1>
+  <p>外行也能懂的 AI Agent 黑话（配套分享稿.md · 第 2 期 2026-07-31）</p>
+</header>
+<div class="wrap">
+
+  <!-- 图1：五层 -->
+  <div class="card">
+    <h2>① 五层架构：从里到外，每层多管一圈</h2>
+    <p class="cap">Prompt → Context → Harness → Loop → Graph，越往外越"管全局"。Graph 包住下面四层，不替代它们。</p>
+    <svg viewBox="0 0 680 300" role="img" aria-label="五层架构">
+      <defs>
+        <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#9aa3af"/>
+        </marker>
+      </defs>
+      <g font-family="inherit" font-size="15">
+        <rect x="20" y="20" width="640" height="54" rx="12" fill="#1d2330" stroke="#9b7fe0" stroke-width="2"/>
+        <text x="40" y="44" fill="#9b7fe0" font-weight="700">Graph</text>
+        <text x="120" y="44" fill="#e8eaed">把多个 Agent / 节点组织成系统（谁干啥、结果给谁、错了怎么兜）</text>
+        <text x="600" y="44" fill="#9aa3af" font-size="12">最外层</text>
+
+        <rect x="20" y="84" width="640" height="54" rx="12" fill="#1d2330" stroke="#d9698a" stroke-width="2"/>
+        <text x="40" y="108" fill="#d9698a" font-weight="700">Loop</text>
+        <text x="110" y="108" fill="#e8eaed">让单个 Agent 自己循环干（干—查—改—再干，直到合格）</text>
+
+        <rect x="20" y="148" width="640" height="54" rx="12" fill="#1d2330" stroke="#e0a64b" stroke-width="2"/>
+        <text x="40" y="172" fill="#e0a64b" font-weight="700">Harness</text>
+        <text x="130" y="172" fill="#e8eaed">套在模型外的执行环境（工具 / 记忆 / 护栏 / 反馈回路）</text>
+
+        <rect x="20" y="212" width="640" height="54" rx="12" fill="#1d2330" stroke="#27c2a0" stroke-width="2"/>
+        <text x="40" y="236" fill="#27c2a0" font-weight="700">Context</text>
+        <text x="130" y="236" fill="#e8eaed">给模型看什么信息（RAG / 记忆 / 工具输出 / 历史）</text>
+
+        <rect x="20" y="276" width="640" height="0" rx="12" fill="none"/>
+      </g>
+      <g font-family="inherit" font-size="15">
+        <rect x="300" y="262" width="80" height="26" rx="8" fill="#5b8def" />
+        <text x="318" y="280" fill="#0f1115" font-weight="700">Prompt</text>
+      </g>
+      <text x="40" y="292" fill="#9aa3af" font-size="12">怎么把任务问对（最里层，一次请求）</text>
+    </svg>
+    <div class="legend">记忆点：Prompt 管"一次怎么问"，Context 管"看什么"，Harness 管"环境"，Loop 管"单 Agent 自转"，Graph 管"一群怎么协作"。</div>
+  </div>
+
+  <!-- 图2：Harness -->
+  <div class="card">
+    <h2>② Harness = 套在模型外的"马具 / 工作环境"</h2>
+    <p class="cap">模型是绝顶聪明但没边界的大脑；Harness 是缰绳 + 马鞍 + 围栏 + 路——让它能安全干活。</p>
+    <svg viewBox="0 0 680 280" role="img" aria-label="Harness 比喻">
+      <defs>
+        <marker id="ar2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#e0a64b"/>
+        </marker>
+      </defs>
+      <rect x="30" y="30" width="620" height="220" rx="18" fill="#1d2330" stroke="#e0a64b" stroke-width="2.5" stroke-dasharray="7 5"/>
+      <text x="50" y="56" fill="#e0a64b" font-weight="700" font-size="15">Harness（马具 / 工作环境）</text>
+      <circle cx="340" cy="150" r="62" fill="#5b8def"/>
+      <text x="340" y="144" fill="#0f1115" font-weight="700" font-size="16" text-anchor="middle">模型</text>
+      <text x="340" y="166" fill="#0f1115" font-size="12" text-anchor="middle">聪明大脑</text>
+      <g font-family="inherit" font-size="13" text-anchor="middle">
+        <rect x="70" y="70" width="110" height="36" rx="9" fill="#27313f" stroke="#3a4250"/>
+        <text x="125" y="93" fill="#e8eaed">工具调用</text>
+        <rect x="500" y="70" width="110" height="36" rx="9" fill="#27313f" stroke="#3a4250"/>
+        <text x="555" y="93" fill="#e8eaed">记忆</text>
+        <rect x="70" y="194" width="110" height="36" rx="9" fill="#27313f" stroke="#3a4250"/>
+        <text x="125" y="217" fill="#e8eaed">护栏 / 边界</text>
+        <rect x="500" y="194" width="110" height="36" rx="9" fill="#27313f" stroke="#3a4250"/>
+        <text x="555" y="217" fill="#e8eaed">反馈回路</text>
+      </g>
+      <g stroke="#e0a64b" stroke-width="2" fill="none" marker-end="url(#ar2)">
+        <line x1="180" y1="88" x2="278" y2="135"/>
+        <line x1="500" y1="88" x2="402" y2="135"/>
+        <line x1="180" y1="212" x2="278" y2="165"/>
+        <line x1="500" y1="212" x2="402" y2="165"/>
+      </g>
+    </svg>
+    <div class="legend">公式：agent = model + harness。"模型装着智能，Harness 是让智能有用的系统。"</div>
+  </div>
+
+  <!-- 图3：Loop -->
+  <div class="card">
+    <h2>③ Agent Loop = 一个 Agent 自己干活的"死循环"</h2>
+    <p class="cap">丢一个目标进去，它自己看→想→干→验，没好就重来，直到合格或停等人。</p>
+    <svg viewBox="0 0 680 300" role="img" aria-label="Loop 循环">
+      <defs>
+        <marker id="ar3" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#d9698a"/>
+        </marker>
+      </defs>
+      <g font-family="inherit" font-size="15" text-anchor="middle">
+        <circle cx="200" cy="90" r="50" fill="#27313f" stroke="#d9698a" stroke-width="2"/>
+        <text x="200" y="86" fill="#e8eaed" font-weight="700">看</text>
+        <text x="200" y="106" fill="#9aa3af" font-size="12">Observe</text>
+
+        <circle cx="480" cy="90" r="50" fill="#27313f" stroke="#d9698a" stroke-width="2"/>
+        <text x="480" y="86" fill="#e8eaed" font-weight="700">想</text>
+        <text x="480" y="106" fill="#9aa3af" font-size="12">Decide</text>
+
+        <circle cx="480" cy="230" r="50" fill="#27313f" stroke="#d9698a" stroke-width="2"/>
+        <text x="480" y="226" fill="#e8eaed" font-weight="700">干</text>
+        <text x="480" y="246" fill="#9aa3af" font-size="12">Act</text>
+
+        <circle cx="200" cy="230" r="50" fill="#27313f" stroke="#d9698a" stroke-width="2"/>
+        <text x="200" y="226" fill="#e8eaed" font-weight="700">验</text>
+        <text x="200" y="246" fill="#9aa3af" font-size="12">Verify</text>
+      </g>
+      <g stroke="#d9698a" stroke-width="2.5" fill="none" marker-end="url(#ar3)">
+        <path d="M250,90 Q340,60 430,90"/>
+        <path d="M480,140 Q480,185 480,180"/>
+        <path d="M430,230 Q340,260 250,230"/>
+        <path d="M200,180 Q200,135 200,140"/>
+      </g>
+      <text x="340" y="58" fill="#9aa3af" font-size="12" text-anchor="middle">规划下一步</text>
+      <text x="510" y="160" fill="#9aa3af" font-size="12" text-anchor="middle">执行</text>
+      <text x="340" y="278" fill="#9aa3af" font-size="12" text-anchor="middle">没好就重来</text>
+      <text x="170" y="160" fill="#9aa3af" font-size="12" text-anchor="middle">检查</text>
+    </svg>
+    <div class="legend">真实例子：客服群有人报 BUG → Agent 自动监听、识别关键词、建任务、查日志、低风险自改上线、高风险转人工。全程无人盯。</div>
+  </div>
+
+  <!-- 图4：Graph -->
+  <div class="card">
+    <h2>④ Graph = 一群节点分工（组织架构图）</h2>
+    <p class="cap">Node=干活的岗位（只干一件事），Edge=数据从谁流到谁。执行顺序 ≠ 数据依赖，能并行的就并行。</p>
+    <svg viewBox="0 0 680 300" role="img" aria-label="Graph 分工">
+      <defs>
+        <marker id="ar4" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#27c2a0"/>
+        </marker>
+        <marker id="ar4d" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#9aa3af"/>
+        </marker>
+      </defs>
+      <g font-family="inherit" font-size="14" text-anchor="middle">
+        <rect x="40" y="130" width="120" height="46" rx="10" fill="#27313f" stroke="#27c2a0" stroke-width="2"/>
+        <text x="100" y="158" fill="#e8eaed">资料员</text>
+        <rect x="200" y="130" width="120" height="46" rx="10" fill="#27313f" stroke="#27c2a0" stroke-width="2"/>
+        <text x="260" y="158" fill="#e8eaed">核对员</text>
+        <rect x="360" y="130" width="120" height="46" rx="10" fill="#27313f" stroke="#27c2a0" stroke-width="2"/>
+        <text x="420" y="158" fill="#e8eaed">写稿人</text>
+        <rect x="520" y="130" width="120" height="46" rx="10" fill="#27313f" stroke="#27c2a0" stroke-width="2"/>
+        <text x="580" y="158" fill="#e8eaed">挑错人</text>
+        <rect x="200" y="40" width="120" height="46" rx="10" fill="#1d2330" stroke="#9aa3af" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="260" y="68" fill="#9aa3af">天气查询</text>
+      </g>
+      <g stroke="#27c2a0" stroke-width="2.5" fill="none" marker-end="url(#ar4)">
+        <line x1="160" y1="153" x2="198" y2="153"/>
+        <line x1="320" y1="153" x2="358" y2="153"/>
+        <line x1="480" y1="153" x2="518" y2="153"/>
+      </g>
+      <g stroke="#9aa3af" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar4d)">
+        <line x1="260" y1="86" x2="260" y2="128"/>
+      </g>
+      <text x="260" y="112" fill="#9aa3af" font-size="11" text-anchor="middle">并行·无数据依赖</text>
+      <text x="100" y="200" fill="#9aa3af" font-size="12" text-anchor="middle">节点只干一件事</text>
+      <text x="580" y="200" fill="#9aa3af" font-size="12" text-anchor="middle">结果收敛验收</text>
+    </svg>
+    <div class="legend">对比 Loop：Loop 是一个人包揽所有事反复打磨；Graph 是组团队，能并行的并行（如"查天气"不必等"总结文件"）。每个节点本身仍是个 Loop。</div>
+  </div>
+
+</div>
+</body>
+</html>

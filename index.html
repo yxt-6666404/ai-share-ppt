@@ -9,38 +9,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* 墨水深色体系 */
     --ink-deep: #060d1a;
     --ink: #0a1628;
     --ink-soft: #121e35;
     --ink-tint: #1a2842;
     --line: rgba(201,169,110,.18);
     --line-soft: rgba(255,255,255,.06);
-
-    /* 暖金强调色 */
     --accent: #c9a96e;
     --accent-soft: #d4b97f;
     --accent-deep: #b89656;
     --accent-glow: rgba(201,169,110,.15);
-
-    /* 靛蓝强调色（话题分享） */
     --indigo: #6b8cff;
     --indigo-rgb: 107,140,255;
     --indigo-glow: rgba(107,140,255,.12);
-
-    /* 文字层级 */
     --paper: #f5f3ef;
     --paper-soft: #d4cfc5;
     --paper-muted: #9a958a;
     --paper-faint: #6b6760;
-
-    /* 字体 */
     --serif-zh: "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
     --serif-en: "Playfair Display", Georgia, serif;
     --sans-zh: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, monospace;
-
-    /* 间距系统 (4px基数) */
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
@@ -50,16 +39,11 @@
     --space-12: 48px;
     --space-16: 64px;
     --space-20: 80px;
-
-    /* 动效曲线 */
     --ease-out: cubic-bezier(.16,1,.3,1);
     --ease-out-soft: cubic-bezier(.25,1,.5,1);
   }
-
   *{box-sizing:border-box;margin:0;padding:0}
-
   html{scroll-behavior:smooth}
-
   body{
     font-family: var(--sans-zh);
     background: var(--ink-deep);
@@ -70,8 +54,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-
-  /* 背景氛围光 */
   body::before{
     content:"";
     position: fixed;
@@ -94,8 +76,6 @@
     pointer-events: none;
     z-index: 0;
   }
-
-  /* 纸张纹理叠加 */
   .texture{
     position: fixed;
     inset: 0;
@@ -104,7 +84,6 @@
     opacity: .03;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-
   .wrap{
     max-width: 1000px;
     margin: 0 auto;
@@ -112,14 +91,11 @@
     position: relative;
     z-index: 2;
   }
-
-  /* ========== Header ========== */
   header{
     text-align: center;
     margin-bottom: var(--space-20);
     animation: fadeUp .9s var(--ease-out) both;
   }
-
   .kicker{
     display: inline-flex;
     align-items: center;
@@ -140,7 +116,6 @@
     background: var(--accent);
     opacity: .5;
   }
-
   h1{
     font-family: var(--serif-zh);
     font-size: clamp(36px, 5.2vw, 56px);
@@ -159,7 +134,6 @@
     vertical-align: middle;
     margin-left: .4em;
   }
-
   .sub{
     color: var(--paper-muted);
     font-size: 15px;
@@ -172,8 +146,6 @@
     color: var(--paper-soft);
     font-weight: 500;
   }
-
-  /* ========== Latest 最新分享 ========== */
   .latest{
     display: block;
     text-decoration: none;
@@ -221,7 +193,6 @@
   .latest:hover::after{
     opacity: 1;
   }
-
   .latest .tag{
     font-family: var(--mono);
     font-size: 11px;
@@ -242,7 +213,6 @@
     box-shadow: 0 0 8px var(--accent);
     animation: pulse 2s ease-in-out infinite;
   }
-
   .latest h2{
     font-family: var(--serif-zh);
     font-size: clamp(22px, 2.6vw, 30px);
@@ -253,7 +223,6 @@
     color: var(--paper);
     text-wrap: balance;
   }
-
   .latest .meta{
     color: var(--paper-muted);
     font-size: 14px;
@@ -261,7 +230,6 @@
     letter-spacing: .05em;
     font-weight: 400;
   }
-
   .latest .go{
     position: absolute;
     right: 48px;
@@ -289,8 +257,6 @@
   .latest:hover .go .arrow{
     transform: translateX(3px);
   }
-
-  /* ========== Section Title ========== */
   .sec-title{
     font-family: var(--mono);
     font-size: 11.5px;
@@ -310,8 +276,6 @@
     height: 1px;
     background: linear-gradient(90deg, var(--line-soft), transparent);
   }
-
-  /* ========== Archive 双列布局 ========== */
   .archive-wrap{
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -346,7 +310,6 @@
   .archive-col.topic h3::before{
     background: var(--indigo);
   }
-
   .archive-col.topic .item::before{
     background: linear-gradient(90deg, var(--indigo), transparent);
   }
@@ -359,12 +322,9 @@
   .archive-col.topic .item:hover .arrow{
     color: var(--indigo);
   }
-
   @media (max-width: 720px){
     .archive-wrap{ grid-template-columns: 1fr; gap: 24px; }
   }
-
-  /* ========== 归档卡片 ========== */
   .item{
     display: flex;
     flex-direction: column;
@@ -401,7 +361,6 @@
   .item:hover::before{
     opacity: 1;
   }
-
   .item .d{
     font-family: var(--mono);
     font-size: 11px;
@@ -416,7 +375,6 @@
   .item .d .star{
     font-size: 10px;
   }
-
   .item .t{
     font-family: var(--serif-zh);
     font-size: 17px;
@@ -434,7 +392,6 @@
   .item:hover .t{
     color: var(--paper);
   }
-
   .item .arrow{
     align-self: flex-end;
     color: var(--paper-faint);
@@ -446,8 +403,6 @@
     color: var(--accent);
     transform: translate(3px, -3px);
   }
-
-  /* ========== Fallback ========== */
   .fallback{
     display: none;
     color: var(--paper-muted);
@@ -464,8 +419,6 @@
     font-size: 12px;
     color: var(--accent-soft);
   }
-
-  /* ========== Footer ========== */
   footer{
     text-align: center;
     color: var(--paper-faint);
@@ -484,8 +437,6 @@
     border-radius: 4px;
     font-size: 11px;
   }
-
-  /* ========== Animations ========== */
   @keyframes fadeUp{
     from{ opacity: 0; transform: translateY(18px); }
     to{ opacity: 1; transform: translateY(0); }
@@ -494,8 +445,6 @@
     0%, 100%{ opacity: 1; }
     50%{ opacity: .4; }
   }
-
-  /* ========== Responsive ========== */
   @media (max-width: 720px){
     .wrap{ padding: var(--space-16) var(--space-4) var(--space-12); max-width: 100%; }
     header{ margin-bottom: var(--space-12); }
@@ -513,8 +462,6 @@
     .item{ min-height: auto; padding: 20px; }
     .item .t{ font-size: 15px; }
   }
-
-  /* ========== Accessibility ========== */
   @media (prefers-reduced-motion: reduce){
     *, *::before, *::after{
       animation-duration: .01ms !important;
@@ -522,7 +469,6 @@
       transition-duration: .01ms !important;
     }
   }
-
   :focus-visible{
     outline: 2px solid var(--accent);
     outline-offset: 3px;
@@ -566,7 +512,6 @@
 </div>
 
 <script>
-  // 兜底：即使 fetch 失败（如本地 file:// 打开）也能看到全部期次
   var FALLBACK = [{
     folder:"2026.7.31-调研分享",
     date:"2026-07-31",
@@ -594,7 +539,7 @@
   }
 
   function render(list){
-    list.sort(function(a,b){ return a.date < b.date ? 1 : -1; }); // 日期倒序，最新在前
+    list.sort(function(a,b){ return a.date < b.date ? 1 : -1; });
     var latest = list[0];
     var el = document.getElementById('latest');
     el.href = latest.ppt;
@@ -602,7 +547,6 @@
     document.getElementById('latest-meta').textContent = '分享日期 · ' + formatDate(latest.date);
     el.style.display = 'block';
 
-    // 按类型分类
     var research = list.filter(function(w){ return w.folder.indexOf('调研分享') > -1; });
     var topic = list.filter(function(w){ return w.folder.indexOf('话题分享') > -1; });
 
